@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collinson H&S System — DNC</title>
+    <!-- Firebase accessed via REST API (no SDK needed) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.7.0/signature_pad.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #f5f5f5; color: #333; }
+        
+        .header {
+            background: linear-gradient(135deg, #1F4E79 0%, #2E74B5 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 28px; margin-bottom: 5px; }
+        .header p { font-size: 14px; opacity: 0.9; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .tab-btn {
+            padding: 12px 20px;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab-btn:hover { background: #f0f0f0; }
+        .tab-btn.active {
+            color: #1F4E79;
+            border-bottom-color: #1F4E79;
+            background: #f9f9f9;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content.active { display: block; }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1F4E79;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        input[type="number"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        textarea { min-height: 100px; resize: vertical; }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #1F4E79;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        button:hover { background: #2E74B5; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        
+        .signature-pad {
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: crosshair;
+            margin-top: 10px;
+            display: block;
+            width: 100%;
+            height: 200px;
+        }
+        
+        .signature-container {
+            margin: 20px 0;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .table th {
+            background: #1F4E79;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .table tr:hover { background: #f9f9f9; }
+        
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .video-card {
+            background: #f9f9f9;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .video-card-title {
+            padding: 15px;
+            font-weight: bold;
+            color: #1F4E79;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .video-card-actions {
+            padding: 15px;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 16px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .warning { background: #ff9800; }
+        .error { background: #f44336; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .modal.active { display: flex; align-items: center; justify-content: center; }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .close-btn {
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .close-btn:hover { color: #000; }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #1F4E79 0%, #2E74B5 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏗️ Collinson H&S Management System</h1>
+        <p>De Nobrega Group — Integrated Health & Safety Platform</p>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('induction')">📋 Inductions</button>
+            <button class="tab-btn" onclick="switchTab('ladders')">🪜 Ladders</button>
+            <button class="tab-btn" onclick="switchTab('tools')">🔧 Tools</button>
+            <button class="tab-btn" onclick="switchTab('talks')">🎥 Toolbox Talks</button>
+            <button class="tab-btn" onclick="switchTab('stocktake')">📦 Stock Take</button>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 1: INDUCTION REGISTER -->
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <div id="induction" class="tab-content active">
+            <h2>Contractor Site Induction Register</h2>
+            <p style="margin-bottom: 20px; color: #666;">Mandatory induction for all contractors entering the Collinson site.</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="inductDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Time:</label>
+                    <input type="time" id="inductTime" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Contractor Name:</label>
+                    <input type="text" id="inductName" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Company:</label>
+                    <input type="text" id="inductCompany" placeholder="Company name" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Trade:</label>
+                <select id="inductTrade" required>
+                    <option value="">Select trade...</option>
+                    <option value="electrical">Electrical</option>
+                    <option value="plumbing">Plumbing</option>
+                    <option value="hvac">HVAC / Aircon</option>
+                    <option value="fire">Fire Safety</option>
+                    <option value="it">IT Support</option>
+                    <option value="cleaning">Cleaning</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Videos Watched:</label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                    <label style="font-weight: normal;"><input type="checkbox" value="safety_intro"> Safety Introduction</label>
+                    <label style="font-weight: normal;"><input type="checkbox" value="emergency"> Emergency Procedures</label>
+                    <label style="font-weight: normal;"><input type="checkbox" value="ppe"> PPE Requirements</label>
+                </div>
+            </div>
+
+            <div class="signature-container">
+                <label>Contractor Signature (stylus):</label>
+                <canvas id="inductSignaturePad" class="signature-pad"></canvas>
+                <button onclick="clearSignature('inductSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+            </div>
+
+            <button onclick="saveInduction()" style="margin-top: 20px; width: 100%;">✅ Save Induction Record</button>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Recent Inductions</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Trade</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="inductionTable">
+                    <tr><td colspan="5" style="text-align: center; color: #999;">No inductions recorded yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 2: LADDER REGISTER -->
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <div id="ladders" class="tab-content">
+            <h2>Ladder Register</h2>
+            <p style="margin-bottom: 20px; color: #666;">Track all ladders: location, condition, inspection status.</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ladder ID (e.g., L001):</label>
+                    <input type="text" id="ladderID" placeholder="L001" required>
+                </div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <select id="ladderType" required>
+                        <option value="">Select type...</option>
+                        <option value="step">Step Ladder</option>
+                        <option value="extension">Extension Ladder</option>
+                        <option value="combination">Combination Ladder</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Height (meters):</label>
+                    <input type="number" id="ladderHeight" placeholder="3.5" step="0.1" required>
+                </div>
+                <div class="form-group">
+                    <label>Material:</label>
+                    <select id="ladderMaterial" required>
+                        <option value="">Select material...</option>
+                        <option value="aluminum">Aluminum</option>
+                        <option value="fiberglass">Fiberglass</option>
+                        <option value="wood">Wood</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Location:</label>
+                    <input type="text" id="ladderLocation" placeholder="Paarden Eiland / Collinson" required>
+                </div>
+                <div class="form-group">
+                    <label>Assigned User:</label>
+                    <input type="text" id="ladderUser" placeholder="Name or team" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Condition:</label>
+                <select id="ladderCondition" required>
+                    <option value="">Select condition...</option>
+                    <option value="good">GOOD</option>
+                    <option value="fair">FAIR</option>
+                    <option value="damaged">DAMAGED</option>
+                    <option value="repair">IN REPAIR</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Inspection Date:</label>
+                <input type="date" id="ladderInspectionDate" required>
+            </div>
+
+            <button onclick="saveLadder()" style="width: 100%;">✅ Save Ladder Record</button>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Ladder Inventory</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Type</th>
+                        <th>Height (m)</th>
+                        <th>Location</th>
+                        <th>Condition</th>
+                        <th>Last Inspected</th>
+                    </tr>
+                </thead>
+                <tbody id="ladderTable">
+                    <tr><td colspan="6" style="text-align: center; color: #999;">No ladders recorded yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 3: TOOL CHECK-OUT/IN LOG -->
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <div id="tools" class="tab-content">
+            <h2>Tool Check-Out / Check-In Log</h2>
+            <p style="margin-bottom: 20px; color: #666;">Track tool movement: who took what, when, and condition on return.</p>
+
+            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                <button onclick="showToolForm('checkout')" style="flex: 1; padding: 15px; font-size: 16px;">📤 Check Out Tool</button>
+                <button onclick="showToolForm('checkin')" style="flex: 1; padding: 15px; font-size: 16px;">📥 Check In Tool</button>
+            </div>
+
+            <div id="toolCheckoutForm" style="display: none;">
+                <h3>Check Out Tool</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stock Number (e.g., DB 002):</label>
+                        <input type="text" id="toolStockNumber" placeholder="DB 002" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tool Name:</label>
+                        <input type="text" id="toolName" placeholder="e.g., Hilti Electrical Drill" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date Out:</label>
+                        <input type="date" id="toolDateOut" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time Out:</label>
+                        <input type="time" id="toolTimeOut" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Person Taking Tool:</label>
+                    <input type="text" id="toolPersonOut" placeholder="Full name" required>
+                </div>
+
+                <div class="signature-container">
+                    <label>Your Signature (stylus):</label>
+                    <canvas id="toolOutSignaturePad" class="signature-pad"></canvas>
+                    <button onclick="clearSignature('toolOutSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+                </div>
+
+                <div class="signature-container">
+                    <label>Person's Signature (stylus):</label>
+                    <canvas id="toolPersonOutSignaturePad" class="signature-pad"></canvas>
+                    <button onclick="clearSignature('toolPersonOutSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+                </div>
+
+                <button onclick="saveToolCheckout()" style="width: 100%; margin-top: 20px;">✅ Record Check-Out</button>
+            </div>
+
+            <div id="toolCheckinForm" style="display: none;">
+                <h3>Check In Tool</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Stock Number:</label>
+                        <input type="text" id="toolStockNumberIn" placeholder="DB 002" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tool Name:</label>
+                        <input type="text" id="toolNameIn" placeholder="e.g., Hilti Electrical Drill" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date In:</label>
+                        <input type="date" id="toolDateIn" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time In:</label>
+                        <input type="time" id="toolTimeIn" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Condition on Return:</label>
+                    <select id="toolCondition" required>
+                        <option value="">Select condition...</option>
+                        <option value="good">GOOD</option>
+                        <option value="minor_damage">MINOR DAMAGE</option>
+                        <option value="major_damage">MAJOR DAMAGE</option>
+                        <option value="lost">LOST</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Person Returning Tool:</label>
+                    <input type="text" id="toolPersonIn" placeholder="Full name" required>
+                </div>
+
+                <div class="signature-container">
+                    <label>Your Signature (stylus):</label>
+                    <canvas id="toolInSignaturePad" class="signature-pad"></canvas>
+                    <button onclick="clearSignature('toolInSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+                </div>
+
+                <div class="signature-container">
+                    <label>Person's Signature (stylus):</label>
+                    <canvas id="toolPersonInSignaturePad" class="signature-pad"></canvas>
+                    <button onclick="clearSignature('toolPersonInSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+                </div>
+
+                <button onclick="saveToolCheckin()" style="width: 100%; margin-top: 20px;">✅ Record Check-In</button>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Tool Log</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Stock #</th>
+                        <th>Tool Name</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th>Person</th>
+                    </tr>
+                </thead>
+                <tbody id="toolTable">
+                    <tr><td colspan="5" style="text-align: center; color: #999;">No tool movements recorded yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 4: TOOLBOX TALKS PLAYER -->
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <div id="talks" class="tab-content">
+            <h2>Toolbox Talks Library</h2>
+            <p style="margin-bottom: 20px; color: #666;">Watch H&S training videos and log attendance.</p>
+
+            <div class="form-group">
+                <label>Select Talk to Watch:</label>
+                <select id="talkSelect" onchange="loadTalk()">
+                    <option value="">Choose a toolbox talk...</option>
+                    <optgroup label="Site Induction">
+                        <option value="intro1">1. Collinson Health & Safety Introduction</option>
+                        <option value="intro2">2. Emergency Procedures</option>
+                        <option value="intro3">3. PPE Requirements</option>
+                    </optgroup>
+                    <optgroup label="Training Talks">
+                        <option value="talk1">Housekeeping</option>
+                        <option value="talk2">Hand Tools Safety</option>
+                        <option value="talk3">Electrical Safety</option>
+                        <option value="talk4">Working at Heights</option>
+                        <option value="talk5">Ladder Safety</option>
+                        <option value="talk6">Fall Protection</option>
+                        <option value="talk7">Power Tools Safety</option>
+                        <option value="talk8">Extension Leads</option>
+                        <option value="talk9">Fire Safety</option>
+                        <option value="talk10">Hazardous Materials</option>
+                        <option value="talk11">PPE Awareness</option>
+                        <option value="talk12">Slips, Trips & Falls</option>
+                        <option value="talk13">Noise & Hearing</option>
+                        <option value="talk14">First Aid Awareness</option>
+                        <option value="talk15">Incident Reporting</option>
+                        <option value="talk16">Risk Assessment</option>
+                        <option value="talk17">Safety Signage</option>
+                        <option value="talk18">Weather Awareness</option>
+                        <option value="talk19">Stacking & Storage</option>
+                        <option value="talk20">Waste Management</option>
+                        <option value="talk21">Workplace Violence</option>
+                        <option value="talk22">Environmental Awareness</option>
+                        <option value="talk23">Company Policies</option>
+                        <option value="talk24">Smoking & Breaks</option>
+                        <option value="talk25">Cell Phone Policy</option>
+                        <option value="talk26">Office Etiquette</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <div id="videoPlayer" style="display: none; margin: 30px 0;">
+                <h3 id="talkTitle" style="margin-bottom: 15px;"></h3>
+                <div style="background: #000; border-radius: 8px; padding: 20px; text-align: center; color: white;">
+                    <p style="margin-bottom: 20px; color: #999;">Video player will appear here</p>
+                    <p style="font-size: 12px;">Videos hosted on Google Drive</p>
+                </div>
+            </div>
+
+            <div id="attendanceForm" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #eee;">
+                <h3 style="margin-bottom: 20px;">Record Attendance</h3>
+
+                <div class="form-group">
+                    <label>Date Watched:</label>
+                    <input type="date" id="talkDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Attendees (name, one per line):</label>
+                    <textarea id="talkAttendees" placeholder="John Smith&#10;Jane Doe&#10;Robert Johnson" required></textarea>
+                </div>
+
+                <div class="signature-container">
+                    <label>Facilitator Signature (stylus):</label>
+                    <canvas id="talkSignaturePad" class="signature-pad"></canvas>
+                    <button onclick="clearSignature('talkSignaturePad')" style="margin-top: 10px; background: #999;">Clear</button>
+                </div>
+
+                <button onclick="saveTalkAttendance()" style="width: 100%; margin-top: 20px;">✅ Record Attendance</button>
+            </div>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Attendance Log</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Talk</th>
+                        <th>Date</th>
+                        <th>Attendees</th>
+                        <th>Signed</th>
+                    </tr>
+                </thead>
+                <tbody id="talkTable">
+                    <tr><td colspan="4" style="text-align: center; color: #999;">No talks recorded yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <!-- TAB 5: MONTHLY STOCK TAKE -->
+        <!-- ════════════════════════════════════════════════════════════════════ -->
+        <div id="stocktake" class="tab-content">
+            <h2>Monthly Stock Take</h2>
+            <p style="margin-bottom: 20px; color: #666;">Count PPE and equipment, compare to previous month.</p>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stock Take Month:</label>
+                    <input type="month" id="stockMonth" required>
+                </div>
+                <div class="form-group">
+                    <label>Date Counted:</label>
+                    <input type="date" id="stockDate" required>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">PPE Inventory Counts</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Reflective Vests:</label>
+                    <input type="number" id="stockVests" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>White T-Shirts:</label>
+                    <input type="number" id="stockTshirts" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Overalls:</label>
+                    <input type="number" id="stockOveralls" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Safety Jackets:</label>
+                    <input type="number" id="stockJackets" min="0" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hard Hats:</label>
+                    <input type="number" id="stockHats" min="0" required>
+                </div>
+                <div class="form-group">
+                    <label>Gloves (pairs):</label>
+                    <input type="number" id="stockGloves" min="0" required>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Damage / Missing Items</h3>
+            <div class="form-group">
+                <label>Damaged or Lost (notes):</label>
+                <textarea id="stockDamaged" placeholder="e.g., 2x torn vests, 1x missing jacket"></textarea>
+            </div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Sign-Off (Both counters must sign)</h3>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Counter 1 Name:</label>
+                    <input type="text" id="stockCounter1" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                    <label>Counter 2 Name:</label>
+                    <input type="text" id="stockCounter2" placeholder="Full name" required>
+                </div>
+            </div>
+
+            <div class="signature-container">
+                <label>Counter 1 Signature (stylus):</label>
+                <canvas id="stockSig1Pad" class="signature-pad"></canvas>
+                <button onclick="clearSignature('stockSig1Pad')" style="margin-top: 10px; background: #999;">Clear</button>
+            </div>
+
+            <div class="signature-container">
+                <label>Counter 2 Signature (stylus):</label>
+                <canvas id="stockSig2Pad" class="signature-pad"></canvas>
+                <button onclick="clearSignature('stockSig2Pad')" style="margin-top: 10px; background: #999;">Clear</button>
+            </div>
+
+            <button onclick="saveStockTake()" style="width: 100%; margin-top: 20px;">✅ Save Stock Take</button>
+
+            <h3 style="margin-top: 40px; margin-bottom: 20px;">Stock History & Variance</h3>
+            <div id="varianceStats" class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Items Counted</div>
+                    <div class="stat-value" id="totalItemsCount">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Damaged/Missing</div>
+                    <div class="stat-value" id="damageCount">-</div>
+                </div>
+            </div>
+
+            <table class="table" style="margin-top: 30px;">
+                <thead>
+                    <tr>
+                        <th>Month</th>
+                        <th>Vests</th>
+                        <th>T-Shirts</th>
+                        <th>Overalls</th>
+                        <th>Jackets</th>
+                        <th>Counters</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTable">
+                    <tr><td colspan="6" style="text-align: center; color: #999;">No stock takes recorded yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // ════════════════════════════════════════════════════════════════════
+        // FIREBASE INITIALIZATION
+        // ════════════════════════════════════════════════════════════════════
+
+        // ── Firebase REST API helpers (no SDK) ──────────────────────────────
+        const FB_URL = 'https://collinson-fm-default-rtdb.europe-west1.firebasedatabase.app';
+
+        const db = {
+            ref: (path) => ({
+                push: (data) => fetch(`${FB_URL}/${path}.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(r => { if (!r.ok) throw new Error(r.statusText); }),
+
+                set: (data) => fetch(`${FB_URL}/${path}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                }).then(r => { if (!r.ok) throw new Error(r.statusText); }),
+
+                on: (event, callback) => {
+                    const load = () => fetch(`${FB_URL}/${path}.json`)
+                        .then(r => r.json())
+                        .then(val => callback({ val: () => val }))
+                        .catch(err => console.error('Firebase load error:', err));
+                    load();
+                    // Poll every 30s to stay fresh
+                    const key = `__poll_${path.replace(/\//g,'_')}`;
+                    if (window[key]) clearInterval(window[key]);
+                    window[key] = setInterval(load, 30000);
+                }
+            })
+        };
+
+        // ════════════════════════════════════════════════════════════════════
+        // TAB SWITCHING
+        // ════════════════════════════════════════════════════════════════════
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Initialize signature pads for visible tab (allow layout to settle first)
+            setTimeout(initSignaturePads, 200);
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // SIGNATURE PAD INITIALIZATION
+        // ════════════════════════════════════════════════════════════════════
+
+        const signaturePads = {};
+
+        function resizeCanvas(canvas) {
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return false;
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(ratio, ratio);
+            return true;
+        }
+
+        function initSignaturePads() {
+            const canvases = document.querySelectorAll('.signature-pad');
+            canvases.forEach(canvas => {
+                if (!signaturePads[canvas.id]) {
+                    const sized = resizeCanvas(canvas);
+                    if (!sized) return; // canvas not yet visible, skip
+                    signaturePads[canvas.id] = new SignaturePad(canvas, {
+                        backgroundColor: 'white'
+                    });
+                } else {
+                    // Re-check: if pad exists but canvas was zero-sized at init, reinit
+                    const pad = signaturePads[canvas.id];
+                    if (canvas.width === 0 || canvas.height === 0) {
+                        const sized = resizeCanvas(canvas);
+                        if (sized) {
+                            signaturePads[canvas.id] = new SignaturePad(canvas, {
+                                backgroundColor: 'white'
+                            });
+                        }
+                    }
+                }
+            });
+        }
+
+        function clearSignature(padId) {
+            if (signaturePads[padId]) {
+                signaturePads[padId].clear();
+            }
+        }
+
+        function getSignatureData(padId) {
+            if (signaturePads[padId] && !signaturePads[padId].isEmpty()) {
+                return signaturePads[padId].toDataURL();
+            }
+            return null;
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // INDUCTION FUNCTIONS
+        // ════════════════════════════════════════════════════════════════════
+
+        function saveInduction() {
+            const data = {
+                date: document.getElementById('inductDate').value,
+                time: document.getElementById('inductTime').value,
+                name: document.getElementById('inductName').value,
+                company: document.getElementById('inductCompany').value,
+                trade: document.getElementById('inductTrade').value,
+                signature: getSignatureData('inductSignaturePad'),
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.date || !data.name || !data.company || !data.trade || !data.signature) {
+                showToast('Please complete all fields and sign', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/inductions').push(data).then(() => {
+                showToast('✅ Induction saved successfully');
+                document.querySelector('#induction form').reset();
+                clearSignature('inductSignaturePad');
+                loadInductions();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function loadInductions() {
+            db.ref('h-and-s/inductions').on('value', snap => {
+                const tbody = document.getElementById('inductionTable');
+                tbody.innerHTML = '';
+                if (snap.val()) {
+                    Object.values(snap.val()).forEach(record => {
+                        const row = `<tr>
+                            <td>${record.date}</td>
+                            <td>${record.name}</td>
+                            <td>${record.company}</td>
+                            <td>${record.trade}</td>
+                            <td>✓ Signed</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // LADDER FUNCTIONS
+        // ════════════════════════════════════════════════════════════════════
+
+        function saveLadder() {
+            const data = {
+                id: document.getElementById('ladderID').value,
+                type: document.getElementById('ladderType').value,
+                height: document.getElementById('ladderHeight').value,
+                material: document.getElementById('ladderMaterial').value,
+                location: document.getElementById('ladderLocation').value,
+                user: document.getElementById('ladderUser').value,
+                condition: document.getElementById('ladderCondition').value,
+                inspectionDate: document.getElementById('ladderInspectionDate').value,
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.id || !data.type || !data.material || !data.condition) {
+                showToast('Please complete all required fields', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/ladders/' + data.id).set(data).then(() => {
+                showToast('✅ Ladder saved successfully');
+                document.querySelectorAll('#ladders input, #ladders select').forEach(el => el.value = '');
+                loadLadders();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function loadLadders() {
+            db.ref('h-and-s/ladders').on('value', snap => {
+                const tbody = document.getElementById('ladderTable');
+                tbody.innerHTML = '';
+                if (snap.val()) {
+                    Object.values(snap.val()).forEach(record => {
+                        const row = `<tr>
+                            <td>${record.id}</td>
+                            <td>${record.type}</td>
+                            <td>${record.height}</td>
+                            <td>${record.location}</td>
+                            <td>${record.condition}</td>
+                            <td>${record.inspectionDate}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // TOOL FUNCTIONS
+        // ════════════════════════════════════════════════════════════════════
+
+        function showToolForm(type) {
+            document.getElementById('toolCheckoutForm').style.display = type === 'checkout' ? 'block' : 'none';
+            document.getElementById('toolCheckinForm').style.display = type === 'checkin' ? 'block' : 'none';
+        }
+
+        function saveToolCheckout() {
+            const data = {
+                stockNumber: document.getElementById('toolStockNumber').value,
+                toolName: document.getElementById('toolName').value,
+                dateOut: document.getElementById('toolDateOut').value,
+                timeOut: document.getElementById('toolTimeOut').value,
+                personOut: document.getElementById('toolPersonOut').value,
+                sigRoelof: getSignatureData('toolOutSignaturePad'),
+                sigPerson: getSignatureData('toolPersonOutSignaturePad'),
+                status: 'OUT',
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.stockNumber || !data.toolName || !data.dateOut || !data.personOut || !data.sigRoelof || !data.sigPerson) {
+                showToast('Please complete all fields and both signatures', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/tools').push(data).then(() => {
+                showToast('✅ Tool check-out recorded');
+                document.getElementById('toolCheckoutForm').reset();
+                clearSignature('toolOutSignaturePad');
+                clearSignature('toolPersonOutSignaturePad');
+                loadTools();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function saveToolCheckin() {
+            const data = {
+                stockNumber: document.getElementById('toolStockNumberIn').value,
+                toolName: document.getElementById('toolNameIn').value,
+                dateIn: document.getElementById('toolDateIn').value,
+                timeIn: document.getElementById('toolTimeIn').value,
+                personIn: document.getElementById('toolPersonIn').value,
+                condition: document.getElementById('toolCondition').value,
+                sigRoelof: getSignatureData('toolInSignaturePad'),
+                sigPerson: getSignatureData('toolPersonInSignaturePad'),
+                status: 'IN',
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.stockNumber || !data.toolName || !data.dateIn || !data.personIn || !data.condition || !data.sigRoelof || !data.sigPerson) {
+                showToast('Please complete all fields and both signatures', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/tools').push(data).then(() => {
+                showToast('✅ Tool check-in recorded');
+                document.getElementById('toolCheckinForm').reset();
+                clearSignature('toolInSignaturePad');
+                clearSignature('toolPersonInSignaturePad');
+                loadTools();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function loadTools() {
+            db.ref('h-and-s/tools').on('value', snap => {
+                const tbody = document.getElementById('toolTable');
+                tbody.innerHTML = '';
+                if (snap.val()) {
+                    Object.values(snap.val()).slice(-10).reverse().forEach(record => {
+                        const row = `<tr>
+                            <td>${record.stockNumber}</td>
+                            <td>${record.toolName}</td>
+                            <td>${record.status}</td>
+                            <td>${record.status === 'OUT' ? record.dateOut : record.dateIn}</td>
+                            <td>${record.status === 'OUT' ? record.personOut : record.personIn}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // TOOLBOX TALKS FUNCTIONS
+        // ════════════════════════════════════════════════════════════════════
+
+        function loadTalk() {
+            const select = document.getElementById('talkSelect');
+            if (select.value) {
+                document.getElementById('videoPlayer').style.display = 'block';
+                document.getElementById('attendanceForm').style.display = 'block';
+                document.getElementById('talkTitle').textContent = select.options[select.selectedIndex].text;
+            } else {
+                document.getElementById('videoPlayer').style.display = 'none';
+                document.getElementById('attendanceForm').style.display = 'none';
+            }
+        }
+
+        function saveTalkAttendance() {
+            const attendeeText = document.getElementById('talkAttendees').value;
+            const attendees = attendeeText.split('\n').filter(a => a.trim());
+
+            const data = {
+                talk: document.getElementById('talkSelect').options[document.getElementById('talkSelect').selectedIndex].text,
+                date: document.getElementById('talkDate').value,
+                attendees: attendees,
+                attendeeCount: attendees.length,
+                signature: getSignatureData('talkSignaturePad'),
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.talk || !data.date || attendees.length === 0 || !data.signature) {
+                showToast('Please complete all fields and sign', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/talks').push(data).then(() => {
+                showToast('✅ Attendance recorded');
+                document.getElementById('talkAttendees').value = '';
+                document.getElementById('talkDate').value = '';
+                clearSignature('talkSignaturePad');
+                loadTalks();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function loadTalks() {
+            db.ref('h-and-s/talks').on('value', snap => {
+                const tbody = document.getElementById('talkTable');
+                tbody.innerHTML = '';
+                if (snap.val()) {
+                    Object.values(snap.val()).slice(-10).reverse().forEach(record => {
+                        const row = `<tr>
+                            <td>${record.talk}</td>
+                            <td>${record.date}</td>
+                            <td>${record.attendeeCount} people</td>
+                            <td>✓ Signed</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                }
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // STOCK TAKE FUNCTIONS
+        // ════════════════════════════════════════════════════════════════════
+
+        function saveStockTake() {
+            const data = {
+                month: document.getElementById('stockMonth').value,
+                date: document.getElementById('stockDate').value,
+                vests: parseInt(document.getElementById('stockVests').value) || 0,
+                tshirts: parseInt(document.getElementById('stockTshirts').value) || 0,
+                overalls: parseInt(document.getElementById('stockOveralls').value) || 0,
+                jackets: parseInt(document.getElementById('stockJackets').value) || 0,
+                hats: parseInt(document.getElementById('stockHats').value) || 0,
+                gloves: parseInt(document.getElementById('stockGloves').value) || 0,
+                damaged: document.getElementById('stockDamaged').value,
+                counter1: document.getElementById('stockCounter1').value,
+                counter2: document.getElementById('stockCounter2').value,
+                sig1: getSignatureData('stockSig1Pad'),
+                sig2: getSignatureData('stockSig2Pad'),
+                timestamp: new Date().toISOString()
+            };
+
+            if (!data.month || !data.date || !data.counter1 || !data.counter2 || !data.sig1 || !data.sig2) {
+                showToast('Please complete all fields and both signatures', 'error');
+                return;
+            }
+
+            db.ref('h-and-s/stocktakes').push(data).then(() => {
+                showToast('✅ Stock take recorded');
+                document.querySelectorAll('#stocktake input, #stocktake textarea').forEach(el => el.value = '');
+                clearSignature('stockSig1Pad');
+                clearSignature('stockSig2Pad');
+                loadStockTakes();
+            }).catch(err => showToast('Error saving: ' + err.message, 'error'));
+        }
+
+        function loadStockTakes() {
+            db.ref('h-and-s/stocktakes').on('value', snap => {
+                const tbody = document.getElementById('stockTable');
+                tbody.innerHTML = '';
+                let totalItems = 0;
+                if (snap.val()) {
+                    Object.values(snap.val()).slice(-10).reverse().forEach(record => {
+                        const total = record.vests + record.tshirts + record.overalls + record.jackets + record.hats + record.gloves;
+                        totalItems = total;
+                        const row = `<tr>
+                            <td>${record.month}</td>
+                            <td>${record.vests}</td>
+                            <td>${record.tshirts}</td>
+                            <td>${record.overalls}</td>
+                            <td>${record.jackets}</td>
+                            <td>${record.counter1}, ${record.counter2}</td>
+                        </tr>`;
+                        tbody.innerHTML += row;
+                    });
+                    document.getElementById('totalItemsCount').textContent = totalItems;
+                }
+            });
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // UTILITIES
+        // ════════════════════════════════════════════════════════════════════
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = 'toast' + (type ? ' ' + type : '');
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // ════════════════════════════════════════════════════════════════════
+        // INITIALIZATION
+        // ════════════════════════════════════════════════════════════════════
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelectorAll('input[type="date"]').forEach(input => {
+                if (!input.value) input.value = today;
+            });
+
+            // Delay signature pad init to ensure canvas layout is resolved
+            setTimeout(initSignaturePads, 200);
+
+            // Re-init on resize / orientation change (clears existing pads to force resize)
+            window.addEventListener('resize', () => {
+                Object.keys(signaturePads).forEach(id => {
+                    const canvas = document.getElementById(id);
+                    if (canvas) {
+                        const data = signaturePads[id].toData();
+                        resizeCanvas(canvas);
+                        signaturePads[id] = new SignaturePad(canvas, { backgroundColor: 'white' });
+                        if (data && data.length) signaturePads[id].fromData(data);
+                    }
+                });
+            });
+
+            // Load all data
+            loadInductions();
+            loadLadders();
+            loadTools();
+            loadTalks();
+            loadStockTakes();
+        });
+    </script>
+</body>
+</html>
