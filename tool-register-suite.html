@@ -1,0 +1,2572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tool Register 2026</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap');
+
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2435;
+    --border: #2a3048;
+    --accent: #f59e0b;
+    --accent2: #3b82f6;
+    --danger: #ef4444;
+    --success: #22c55e;
+    --warning: #f97316;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --header-h: 64px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    height: var(--header-h);
+    background: var(--surface);
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+
+  header .logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--accent);
+  }
+  header .logo span { color: var(--text); }
+
+  header .clock {
+    margin-left: auto;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 16px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── NAV TABS ── */
+  .nav {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    gap: 4px;
+    overflow-x: auto;
+  }
+
+  .nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 12px 18px;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+  }
+
+  .nav button:hover { color: var(--text); }
+  .nav button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  .badge {
+    background: var(--danger);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+
+  /* ── MAIN ── */
+  main { padding: 24px; max-width: 1400px; margin: 0 auto; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ── DASHBOARD CARDS ── */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent);
+  }
+  .stat-card.blue::before { background: var(--accent2); }
+  .stat-card.green::before { background: var(--success); }
+  .stat-card.red::before { background: var(--danger); }
+  .stat-card.orange::before { background: var(--warning); }
+
+  .stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 40px;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--accent);
+  }
+  .stat-card.blue .stat-num { color: var(--accent2); }
+  .stat-card.green .stat-num { color: var(--success); }
+  .stat-card.red .stat-num { color: var(--danger); }
+  .stat-card.orange .stat-num { color: var(--warning); }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 6px;
+  }
+
+  /* ── SECTION TITLES ── */
+  .section-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── ALERTS ── */
+  .alerts-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+
+  .alert-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--danger);
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    animation: slideIn 0.3s ease;
+  }
+
+  .alert-item.warning { border-left-color: var(--warning); }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .alert-icon { font-size: 20px; flex-shrink: 0; }
+  .alert-text { flex: 1; }
+  .alert-text strong { display: block; font-size: 14px; }
+  .alert-text span { font-size: 12px; color: var(--muted); }
+  .alert-days {
+    background: var(--danger);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .alert-item.warning .alert-days { background: var(--warning); }
+
+  /* ── TOOL REGISTER TABLE ── */
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .search-box {
+    flex: 1;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+  }
+  .search-box:focus { outline: none; border-color: var(--accent2); }
+
+  select.filter-select {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 14px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  select.filter-select:focus { outline: none; border-color: var(--accent2); }
+
+  .btn {
+    background: var(--accent);
+    color: #0f1117;
+    border: none;
+    border-radius: 8px;
+    padding: 9px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: #fbbf24; }
+  .btn.secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn.secondary:hover { border-color: var(--accent2); color: var(--accent2); }
+  .btn.danger { background: var(--danger); color: #fff; }
+  .btn.small { padding: 5px 12px; font-size: 13px; }
+  .btn.success { background: var(--success); color: #fff; }
+
+  .table-wrap { overflow-x: auto; border-radius: 10px; border: 1px solid var(--border); }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead tr {
+    background: var(--surface2);
+  }
+
+  th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tbody tr { background: var(--surface); transition: background 0.15s; }
+  tbody tr:hover { background: var(--surface2); }
+
+  .category-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--accent2);
+    white-space: nowrap;
+  }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-pill.available { background: rgba(34,197,94,0.15); color: var(--success); }
+  .status-pill.out { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .status-pill.overdue { background: rgba(249,115,22,0.15); color: var(--warning); animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .cond-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .cond-good { background: rgba(34,197,94,0.15); color: var(--success); }
+  .cond-fair { background: rgba(245,158,11,0.15); color: var(--accent); }
+  .cond-repair { background: rgba(239,68,68,0.15); color: var(--danger); }
+  .cond-unknown { background: rgba(100,116,139,0.15); color: var(--muted); }
+
+  /* ── BOOKING MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: modalIn 0.25s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-header {
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .modal-header .icon { font-size: 28px; }
+  .modal-header h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .modal-header .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 22px;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body { padding: 22px 24px; }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .form-row.single { grid-template-columns: 1fr; }
+
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--accent2);
+  }
+
+  .sig-pad-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+  }
+  #sigCanvas { display: block; cursor: crosshair; touch-action: none; }
+  .sig-controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .modal-footer {
+    padding: 16px 24px 22px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ── BOOKINGS TABLE ── */
+  .log-header { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+
+  /* ── TOAST ── */
+  #toast-container {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .toast {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    max-width: 360px;
+    animation: toastIn 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .toast.success { border-left: 4px solid var(--success); }
+  .toast.error { border-left: 4px solid var(--danger); }
+  .toast.warning { border-left: 4px solid var(--warning); }
+
+  @keyframes toastIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; }
+
+  .overdue-row td { background: rgba(249,115,22,0.07) !important; }
+  .out-row td { background: rgba(59,130,246,0.06) !important; }
+
+  .tab-content-inner { animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Sign canvas */
+  .sig-label { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Recent activity */
+  .activity-feed { display: flex; flex-direction: column; gap: 8px; }
+  .activity-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 13px;
+  }
+  .activity-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .activity-dot.out { background: var(--danger); }
+  .activity-dot.in { background: var(--success); }
+  .activity-meta { color: var(--muted); font-size: 11px; margin-top: 2px; }
+
+  /* responsive */
+  @media (max-width: 640px) {
+    main { padding: 14px; }
+    .form-row { grid-template-columns: 1fr; }
+    header .logo { font-size: 17px; }
+  }
+
+  /* ── EDITABLE LOCATION ── */
+  .loc-display {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 5px;
+    transition: background 0.15s;
+  }
+  .loc-display:hover { background: var(--border); }
+  .loc-edit-icon { font-size: 11px; color: var(--muted); opacity: 0; transition: opacity 0.15s; }
+  .loc-display:hover .loc-edit-icon { opacity: 1; }
+  .loc-input {
+    background: var(--surface);
+    border: 1px solid var(--accent2);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 13px;
+    padding: 3px 8px;
+    width: 160px;
+    outline: none;
+  }
+
+  /* ── LADDER REGISTER ── */
+  .ladder-toolbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .ladder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .ladder-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .ladder-card-header {
+    background: var(--surface2);
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .ladder-id {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .ladder-card-body {
+    padding: 14px 18px;
+  }
+
+  .ladder-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .ladder-meta span strong { color: var(--text); display: block; font-size: 13px; }
+
+  .ladder-checklist {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .ladder-check-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .ladder-check-item:last-child { border-bottom: none; }
+  .ladder-check-item input[type="checkbox"] { accent-color: var(--success); width: 14px; height: 14px; cursor: pointer; }
+  .ladder-check-item label { flex: 1; cursor: pointer; color: var(--text); }
+  .check-fail { color: var(--danger); font-size: 10px; font-weight: 700; }
+
+  .ladder-booking {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .ladder-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+
+  .ladder-history {
+    margin-top: 12px;
+  }
+
+  .ladder-history-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .ladder-log-entry {
+    font-size: 11px;
+    color: var(--muted);
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+  .ladder-log-entry:last-child { border-bottom: none; }
+  .ladder-log-entry .log-type {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .log-type.out { color: var(--warning); }
+  .log-type.in { color: var(--success); }
+  .log-type.inspect { color: var(--accent2); }
+
+  .ladder-inspect-btn {
+    font-size: 11px;
+    padding: 4px 10px;
+  }
+
+  .insp-result {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .insp-pass { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid var(--success); }
+  .insp-fail { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  /* ── INLINE EDIT SELECTS (Condition / Status) ── */
+  .inline-edit-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    font-size: 12px;
+    padding: 4px 6px;
+    cursor: pointer;
+    width: 100%;
+    min-width: 120px;
+  }
+  .inline-edit-select:focus { outline: none; border-color: var(--accent2); }
+  .cond-select { color: var(--accent); }
+  .status-select { color: var(--success); }
+
+  /* Inspection modal extras */
+  .insp-checks { display: grid; gap: 8px; margin: 14px 0; }
+  .insp-check-row { display: flex; align-items: center; gap: 10px; font-size: 13px; padding: 8px; background: var(--surface2); border-radius: 6px; }
+  .insp-check-row label { flex: 1; }
+  .insp-check-row select { background: var(--surface); border: 1px solid var(--border); color: var(--text); border-radius: 5px; padding: 4px 8px; font-size: 12px; }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔧 TOOL<span>REGISTER</span> <span style="font-size:13px;color:var(--muted);font-weight:400;">2026</span></div>
+  <div class="clock" id="liveClock"></div>
+</header>
+
+<div class="nav">
+  <button class="active" onclick="showPage('dashboard')">📊 Dashboard</button>
+  <button onclick="showPage('register')">🗂 Tool Register</button>
+  <button onclick="showPage('bookings')">📋 Booking Log <span class="badge" id="activeBookingsBadge">0</span></button>
+  <button onclick="showPage('ladders')">🪜 Ladder Register</button>
+  <button onclick="showPage('alerts')">🚨 Alerts <span class="badge" id="alertsBadge" style="display:none"></span></button>
+  <button onclick="showPage('ppe')">🦺 PPE Register</button>
+</div>
+
+<main>
+
+  <!-- DASHBOARD -->
+  <div class="page active tab-content-inner" id="page-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Total Tools</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num" id="statAvail">0</div>
+        <div class="stat-label">Available</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-num" id="statOut">0</div>
+        <div class="stat-label">Booked Out</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-num" id="statOverdue">0</div>
+        <div class="stat-label">Overdue (&gt;2 days)</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-num" id="statRepair">0</div>
+        <div class="stat-label">Needs Repair</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-num" id="statLaddersOut">0</div>
+        <div class="stat-label">Ladders Out</div>
+      </div>
+    </div>
+
+    <div class="section-title">🚨 Active Overdue Alerts</div>
+    <div id="dashAlerts" class="alerts-list">
+      <div class="empty-state"><div class="icon">✅</div><p>No overdue tools — all good!</p></div>
+    </div>
+
+    <div class="section-title">⚡ Recent Activity</div>
+    <div id="activityFeed" class="activity-feed">
+      <div class="empty-state" style="padding:24px"><p>No activity yet</p></div>
+    </div>
+  </div>
+
+  <!-- TOOL REGISTER -->
+  <div class="page tab-content-inner" id="page-register">
+    <div class="toolbar">
+      <input class="search-box" type="text" id="toolSearch" placeholder="🔍  Search tools, stock no, category…" oninput="renderRegister()">
+      <select class="filter-select" id="catFilter" onchange="renderRegister()">
+        <option value="">All Categories</option>
+      </select>
+      <select class="filter-select" id="statusFilter" onchange="renderRegister()">
+        <option value="">All Statuses</option>
+        <option value="available">Available</option>
+        <option value="out">Booked Out</option>
+        <option value="overdue">Overdue</option>
+      </select>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Tool Name</th>
+            <th>Stock No</th>
+            <th>Make/Brand</th>
+            <th>Condition</th>
+            <th>Base Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="registerBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BOOKINGS LOG -->
+  <div class="page tab-content-inner" id="page-bookings">
+    <div class="log-header">
+      <input class="search-box" type="text" id="logSearch" placeholder="🔍  Search bookings…" style="max-width:300px" oninput="renderLog()">
+      <select class="filter-select" id="logStatusFilter" onchange="renderLog()">
+        <option value="">All</option>
+        <option value="out">Currently Out</option>
+        <option value="returned">Returned</option>
+      </select>
+      <button class="btn secondary small" onclick="exportLog()">⬇ Export CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Stock No</th>
+            <th>Signed Out By</th>
+            <th>Site / Location</th>
+            <th>Date &amp; Time Out</th>
+            <th>Date &amp; Time In</th>
+            <th>Signed In By</th>
+            <th>Duration</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LADDER REGISTER -->
+  <div class="page tab-content-inner" id="page-ladders">
+    <div class="ladder-toolbar">
+      <input class="search-box" type="text" id="ladderSearch" placeholder="🔍  Search ladder ID, location…" oninput="renderLadders()" style="max-width:300px">
+      <select class="filter-select" id="ladderLocFilter" onchange="renderLadders()">
+        <option value="">All Locations</option>
+      </select>
+      <select class="filter-select" id="ladderStatusFilter" onchange="renderLadders()">
+        <option value="">All Statuses</option>
+        <option value="available">Available</option>
+        <option value="out">Booked Out</option>
+      </select>
+      <button class="btn secondary small" onclick="exportLadderLog()">⬇ Export CSV</button>
+    </div>
+    <div class="ladder-grid" id="ladderGrid"></div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="page tab-content-inner" id="page-alerts">
+    <div class="section-title">🚨 Overdue Tools (Booked Out &gt; 2 Consecutive Days)</div>
+    <div id="alertsPage" class="alerts-list">
+      <div class="empty-state"><div class="icon">✅</div><p>No overdue tools — all clear!</p></div>
+    </div>
+  </div>
+
+  <!-- PPE REGISTER -->
+  <div class="page tab-content-inner" id="page-ppe">
+    <div class="section-title">🦺 PPE Issue Register</div>
+    <!-- Stats -->
+    <div class="stats-grid" id="ppeStatCards" style="margin-bottom:28px;"></div>
+
+    <!-- Issue PPE form -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;">
+      <div class="section-title" style="font-size:15px;margin-bottom:14px;">➕ Issue PPE to Person</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Full Name *</label>
+          <input class="search-box" type="text" id="tr_ppeNewName" placeholder="Name (or select existing)" list="tr_ppeNameList" style="width:100%">
+          <datalist id="tr_ppeNameList"></datalist>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Role</label>
+          <select class="filter-select" id="tr_ppeNewRole" style="width:100%">
+            <option value="Supervisor">Supervisor</option>
+            <option value="Labourer">Labourer</option>
+            <option value="Painter">Painter</option>
+            <option value="Subcontractor">Subcontractor</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">PPE Item *</label>
+          <select class="filter-select" id="tr_ppItemSelect" style="width:100%"></select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Status</label>
+          <select class="filter-select" id="tr_ppeStatus" style="width:100%">
+            <option value="Issued">Issued (DNC supplied)</option>
+            <option value="Own">Own (personal)</option>
+            <option value="Not Issued">Not Issued</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Qty</label>
+          <input type="number" class="search-box" id="tr_ppeQty" value="1" min="1" style="width:100%">
+        </div>
+        <div>
+          <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Date Issued</label>
+          <input type="date" class="search-box" id="tr_ppeDate" style="width:100%">
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Notes (optional)</label>
+        <input type="text" class="search-box" id="tr_ppeNotes" placeholder="Size, colour, remarks…" style="width:100%">
+      </div>
+      <div style="margin-bottom:12px;">
+        <label style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;">Recipient Signature (required for DNC-supplied items)</label>
+        <div class="sig-pad-wrap"><canvas id="tr_ppeSig" width="510" height="110"></canvas></div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearCanvas('tr_ppeSig')">Clear</button>
+          <span class="sig-label">Draw signature above</span>
+        </div>
+      </div>
+      <button class="btn" onclick="trAddPPE()" style="width:100%">✅ Record PPE Issue</button>
+    </div>
+
+    <!-- Add new PPE type -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:13px;color:var(--muted);">New item type:</span>
+      <input type="text" class="search-box" id="tr_newPPEType" placeholder="e.g. Knee Pads" style="flex:1;min-width:160px;">
+      <button class="btn secondary small" onclick="trAddPPEType()">+ Add Type</button>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="toolbar">
+      <input class="search-box" type="text" id="tr_ppeSearch" placeholder="🔍 Search person or item…" oninput="trRenderPPE()">
+      <select class="filter-select" id="tr_ppePersonFilter" onchange="trRenderPPE()"><option value="">All Personnel</option></select>
+      <select class="filter-select" id="tr_ppeItemFilter" onchange="trRenderPPE()"><option value="">All Items</option></select>
+      <button class="btn secondary small" onclick="trExportPPECSV()">⬇ Export CSV</button>
+    </div>
+
+    <!-- Per-person cards -->
+    <div id="tr_ppeCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:28px;"></div>
+
+    <!-- Full log table -->
+    <div class="section-title" style="font-size:15px;margin-bottom:12px;">📋 Full Issue Log</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Person</th><th>Role</th><th>PPE Item</th><th>Qty</th><th>Status</th><th>Date</th><th>Signed</th><th>Notes</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tr_ppeBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<!-- BOOK OUT MODAL (Tools) -->
+<div class="modal-overlay" id="bookOutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="icon">📤</div>
+      <div>
+        <h2 id="bookOutTitle">Book Out Tool</h2>
+        <div class="sub" id="bookOutSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('bookOutModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date Out</label>
+          <input type="date" id="outDate" readonly>
+        </div>
+        <div class="form-group">
+          <label>Time Out</label>
+          <input type="time" id="outTime" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="outName" placeholder="Who is taking this tool?">
+        </div>
+        <div class="form-group">
+          <label>Site / Location *</label>
+          <input type="text" id="outSite" placeholder="e.g. Paarden Eiland, Milpark…">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Purpose / Notes</label>
+          <input type="text" id="outNotes" placeholder="Optional notes">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Signature (Sign Below) *</label>
+        <div class="sig-pad-wrap">
+          <canvas id="sigCanvas" width="510" height="110"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearSig()">Clear</button>
+          <span class="sig-label">Draw your signature above</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('bookOutModal')">Cancel</button>
+      <button class="btn" onclick="confirmBookOut()">📤 Confirm Book Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- RETURN MODAL (Tools) -->
+<div class="modal-overlay" id="returnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="icon">📥</div>
+      <div>
+        <h2 id="returnTitle">Return Tool</h2>
+        <div class="sub" id="returnSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('returnModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date In</label>
+          <input type="date" id="inDate" readonly>
+        </div>
+        <div class="form-group">
+          <label>Time In</label>
+          <input type="time" id="inTime" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Returned By *</label>
+          <input type="text" id="inName" placeholder="Who is returning this tool?">
+        </div>
+        <div class="form-group">
+          <label>Tool Condition</label>
+          <select id="inCondition">
+            <option value="GOOD">Good</option>
+            <option value="FAIR">Fair</option>
+            <option value="NEEDS REPAIRS">Needs Repairs</option>
+            <option value="EXCELLENT">Excellent</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Notes on Return</label>
+          <input type="text" id="inNotes" placeholder="Any damage, issues, or comments?">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Signature on Return *</label>
+        <div class="sig-pad-wrap">
+          <canvas id="sigCanvasReturn" width="510" height="110"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearSigReturn()">Clear</button>
+          <span class="sig-label">Draw your signature above</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('returnModal')">Cancel</button>
+      <button class="btn success" onclick="confirmReturn()">📥 Confirm Return</button>
+    </div>
+  </div>
+</div>
+
+<!-- LADDER BOOK OUT MODAL -->
+<div class="modal-overlay" id="ladderBookOutModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="icon">🪜</div>
+      <div>
+        <h2 id="ladderBookOutTitle">Book Out Ladder</h2>
+        <div class="sub" id="ladderBookOutSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ladderBookOutModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date Out</label>
+          <input type="date" id="lOutDate" readonly>
+        </div>
+        <div class="form-group">
+          <label>Time Out</label>
+          <input type="time" id="lOutTime" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" id="lOutName" placeholder="Who is taking this ladder?">
+        </div>
+        <div class="form-group">
+          <label>Site / Destination *</label>
+          <input type="text" id="lOutSite" placeholder="e.g. Milpark, Collinson…">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="lOutNotes" placeholder="Optional notes">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Signature *</label>
+        <div class="sig-pad-wrap">
+          <canvas id="sigCanvasLadderOut" width="510" height="110"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearLadderOutSig()">Clear</button>
+          <span class="sig-label">Draw your signature above</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('ladderBookOutModal')">Cancel</button>
+      <button class="btn" onclick="confirmLadderBookOut()">📤 Confirm Book Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- LADDER RETURN MODAL -->
+<div class="modal-overlay" id="ladderReturnModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="icon">📥</div>
+      <div>
+        <h2 id="ladderReturnTitle">Return Ladder</h2>
+        <div class="sub" id="ladderReturnSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ladderReturnModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date In</label>
+          <input type="date" id="lInDate" readonly>
+        </div>
+        <div class="form-group">
+          <label>Time In</label>
+          <input type="time" id="lInTime" readonly>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Returned By *</label>
+          <input type="text" id="lInName" placeholder="Who is returning this ladder?">
+        </div>
+        <div class="form-group">
+          <label>Condition</label>
+          <select id="lInCondition">
+            <option value="Good">Good</option>
+            <option value="Fair">Fair</option>
+            <option value="Needs Repairs">Needs Repairs</option>
+            <option value="Excellent">Excellent</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Notes on Return</label>
+          <input type="text" id="lInNotes" placeholder="Any damage, issues?">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Signature *</label>
+        <div class="sig-pad-wrap">
+          <canvas id="sigCanvasLadderIn" width="510" height="110"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearLadderInSig()">Clear</button>
+          <span class="sig-label">Draw your signature above</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('ladderReturnModal')">Cancel</button>
+      <button class="btn success" onclick="confirmLadderReturn()">📥 Confirm Return</button>
+    </div>
+  </div>
+</div>
+
+<!-- LADDER INSPECTION MODAL -->
+<div class="modal-overlay" id="ladderInspectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="icon">🔍</div>
+      <div>
+        <h2 id="ladderInspectTitle">Ladder Inspection</h2>
+        <div class="sub" id="ladderInspectSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal('ladderInspectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Inspection Date</label>
+          <input type="date" id="inspDate" readonly>
+        </div>
+        <div class="form-group">
+          <label>Inspector Name *</label>
+          <input type="text" id="inspName" placeholder="Inspector full name">
+        </div>
+      </div>
+      <div class="section-title" style="font-size:14px;margin:10px 0 6px">Step Ladder Checklist</div>
+      <div class="insp-checks">
+        <div class="insp-check-row"><label>Steps — Loose, cracked, bent or missing</label><select id="ic0"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>Rails — Cracked, bent, split or frayed</label><select id="ic1"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>Pail shelf — Loose, bent, missing or broken</label><select id="ic2"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>Top — Cracked, loose or missing</label><select id="ic3"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>Spreader — Loose, bent or broken</label><select id="ic4"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>General — Rust, corrosion or loose</label><select id="ic5"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+        <div class="insp-check-row"><label>Other — Bracing, shoes, rivets</label><select id="ic6"><option value="Pass">Pass</option><option value="Fail">Fail</option></select></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tagged &amp; Removed from Site?</label>
+          <select id="inspTagged"><option value="No">No</option><option value="Yes">Yes</option></select>
+        </div>
+        <div class="form-group">
+          <label>Overall Result</label>
+          <select id="inspOverall"><option value="Good condition">Good condition</option><option value="Requires attention">Requires attention</option><option value="Remove from service">Remove from service</option></select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="form-group">
+          <label>Notes</label>
+          <input type="text" id="inspNotes" placeholder="Any remarks or actions required?">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Inspector Signature *</label>
+        <div class="sig-pad-wrap">
+          <canvas id="sigCanvasInspect" width="510" height="110"></canvas>
+        </div>
+        <div class="sig-controls">
+          <button class="btn secondary small" onclick="clearInspSig()">Clear</button>
+          <span class="sig-label">Draw your signature above</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn secondary" onclick="closeModal('ladderInspectModal')">Cancel</button>
+      <button class="btn" onclick="confirmInspection()">✅ Save Inspection</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script>
+// ═══════════════════════════════════════════
+//  FIREBASE SYNC (shared with Collinson H&S app)
+// ═══════════════════════════════════════════
+// Same Firebase project as collinson-h-and-s-v3.html. Tool bookings are written
+// to h-and-s/toolBookings so both apps show live checked-out/available status,
+// across devices.
+
+const FB_URL = 'https://collinson-fm-default-rtdb.europe-west1.firebasedatabase.app';
+
+const db = {
+  ref: (path) => ({
+    push: (data) => fetch(`${FB_URL}/${path}.json`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); }),
+
+    set: (data) => fetch(`${FB_URL}/${path}.json`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).then(r => { if (!r.ok) throw new Error(r.statusText); }),
+
+    on: (event, callback) => {
+      let errShown = false;
+      const load = () => fetch(`${FB_URL}/${path}.json`)
+        .then(r => { if (!r.ok) throw new Error(r.statusText); return r.json(); })
+        .then(val => { errShown = false; callback({ val: () => val }); })
+        .catch(err => {
+          if (!errShown) {
+            errShown = true;
+            console.warn('Firebase unreachable - check DB URL and rules:', err.message);
+            if (typeof showToast === 'function') showToast('⚠ Offline — using last saved tool data', 'error');
+          }
+        });
+      load();
+      // Poll every 20s so a checkout on one device shows up quickly on another
+      const key = `__poll_${path.replace(/\//g,'_')}`;
+      if (window[key]) clearInterval(window[key]);
+      window[key] = setInterval(load, 20000);
+    }
+  })
+};
+
+function fbSaveToolBooking(b) {
+  db.ref('h-and-s/toolBookings/' + b.id).set(b).catch(err => {
+    console.warn('Could not sync booking to Firebase:', err.message);
+    showToast('⚠ Saved locally, but could not sync to Collinson H&S app (offline?)', 'error');
+  });
+}
+
+// ═══════════════════════════════════════════
+//  DATA — Tools
+// ═══════════════════════════════════════════
+
+// ─── EDITABLE CONDITION & STATUS OVERRIDES ─────────────────────────────────
+const COND_KEY   = 'toolReg_conditions_v2';
+const STATUS_KEY = 'toolReg_statusOverrides_v1';
+let toolCondOverrides  = (() => { try { return JSON.parse(localStorage.getItem(COND_KEY)||'{}'); } catch { return {}; } })();
+let toolStatusOverrides = (() => { try { return JSON.parse(localStorage.getItem(STATUS_KEY)||'{}'); } catch { return {}; } })();
+function saveCondOverrides()   { localStorage.setItem(COND_KEY,   JSON.stringify(toolCondOverrides)); }
+function saveStatusOverrides() { localStorage.setItem(STATUS_KEY, JSON.stringify(toolStatusOverrides)); }
+
+const CONDITION_OPTIONS = ['GOOD','EXCELLENT','FAIR','DAMAGED','NEEDS REPAIRS','UNKNOWN'];
+const STATUS_OPTIONS    = ['Available','Booked Out','Sent for Repairs','Damaged — Out of Service','Reserved','Lost / Missing'];
+
+const TOOLS_DATA = [
+  // DRILLING
+  { id:'T001', category:'DRILLING', name:'Electrical Drill', stockNo:'DB 002', brand:'HILTI', condition:'UNKNOWN', location:'PAARDEN EILAND', serial:'D/420890830' },
+  { id:'T002', category:'DRILLING', name:'Electrical Drill', stockNo:'DE 005', brand:'METABO', condition:'GOOD', location:'PAARDEN EILAND', serial:'401-002-439' },
+  { id:'T003', category:'DRILLING', name:'Electrical Drill', stockNo:'DE 006', brand:'METABO', condition:'GOOD', location:'PAARDEN EILAND', serial:'606001187' },
+  { id:'T004', category:'DRILLING', name:'SDS Hammer Drill', stockNo:'SDSB 001', brand:'HILTI', condition:'UNKNOWN', location:'PAARDEN EILAND', serial:'29349' },
+  { id:'T005', category:'DRILLING', name:'SDS Hammer Drill', stockNo:'SDSE 003', brand:'MAKITA', condition:'UNKNOWN', location:'COLLINSON', serial:'HR2450' },
+  { id:'T006', category:'DRILLING', name:'SDS Hammer Drill', stockNo:'SDSE 004', brand:'BOSCH', condition:'GOOD', location:'COLLINSON', serial:'3611b5a400' },
+  { id:'T007', category:'DRILLING', name:'Mortice Drill', stockNo:'D002', brand:'BOSCH', condition:'NEEDS REPAIRS', location:'COLLINSON', serial:'' },
+  // CUTTING
+  { id:'T008', category:'CUTTING', name:'Jigsaw', stockNo:'J001', brand:'MAKITA/HILTI', condition:'UNKNOWN', location:'GINA', serial:'286800E' },
+  { id:'T009', category:'CUTTING', name:'Jigsaw', stockNo:'J002', brand:'BLACK & DECKER', condition:'GOOD', location:'COLLINSON', serial:'5530-10-01' },
+  { id:'T010', category:'CUTTING', name:'Circular Saw', stockNo:'HCS 001', brand:'MAKITA/HILTI', condition:'GOOD', location:'COLLINSON', serial:'59337 G' },
+  { id:'T011', category:'CUTTING', name:'Circular Saw', stockNo:'HCS 002', brand:'MAKITA/HILTI', condition:'UNKNOWN', location:'GINA', serial:'420890815' },
+  { id:'T012', category:'CUTTING', name:'Nu-Tek Saw', stockNo:'MC 001', brand:'BOSCH', condition:'UNKNOWN', location:'GINA', serial:'127000145-2021' },
+  { id:'T013', category:'CUTTING', name:'Cut Off Saw', stockNo:'CS 001', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'002Z529G' },
+  { id:'T014', category:'CUTTING', name:'Cut Off Saw', stockNo:'CS 002', brand:'MAKITA/HILTI', condition:'GOOD', location:'COLLINSON', serial:'420890843' },
+  { id:'T015', category:'CUTTING', name:'Large Aluminium Saw', stockNo:'FS 001', brand:'MAKITA/HILTI', condition:'GOOD', location:'COLLINSON', serial:'00016840' },
+  { id:'T016', category:'CUTTING', name:'Reciprocal Saw', stockNo:'RS 001', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'S/37596' },
+  { id:'T017', category:'CUTTING', name:'Jigsaw', stockNo:'JH14', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T018', category:'CUTTING', name:'Circular Saw', stockNo:'CS003', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T019', category:'CUTTING', name:'Nutec Skill Saw', stockNo:'MC001', brand:'BOSCH', condition:'GOOD', location:'COLLINSON', serial:'' },
+  // FASTENING
+  { id:'T020', category:'FASTENING', name:'Biscuit Machine', stockNo:'BIS 001', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'NO SERIAL' },
+  { id:'T021', category:'FASTENING', name:'Nail Gun DX 460', stockNo:'DX 460', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'427230' },
+  { id:'T022', category:'FASTENING', name:'Nail Gun DX 460/1', stockNo:'DX 460/1', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'386440' },
+  { id:'T023', category:'FASTENING', name:'Nail Gun BX 3', stockNo:'BX 3', brand:'HILTI', condition:'UNKNOWN', location:'GINA', serial:'NG/58292' },
+  { id:'T024', category:'FASTENING', name:'Staple Gun', stockNo:'DN418/D21', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  // SANDING & GRINDING
+  { id:'T025', category:'SANDING/GRINDING', name:'Router', stockNo:'R 001', brand:'MAKITA', condition:'GOOD', location:'COLLINSON', serial:'5157' },
+  { id:'T026', category:'SANDING/GRINDING', name:'Grinder', stockNo:'G 115/1', brand:'MAKITA', condition:'UNKNOWN', location:'GINA', serial:'0601375103' },
+  { id:'T027', category:'SANDING/GRINDING', name:'Grinder', stockNo:'G 002', brand:'MAKITA', condition:'GOOD', location:'COLLINSON', serial:'7860002' },
+  { id:'T028', category:'SANDING/GRINDING', name:'Grinder', stockNo:'G 001', brand:'MAKITA', condition:'UNKNOWN', location:'UNKNOWN', serial:'7-115 6601C88101' },
+  { id:'T029', category:'SANDING/GRINDING', name:'Sander Orbital', stockNo:'S 001', brand:'MAKITA', condition:'GOOD', location:'COLLINSON', serial:'2130007387' },
+  { id:'T030', category:'SANDING/GRINDING', name:'Sander Orbital', stockNo:'S 002', brand:'MAKITA', condition:'GOOD', location:'COLLINSON', serial:'211107767' },
+  { id:'T031', category:'SANDING/GRINDING', name:'Planer', stockNo:'P 001', brand:'HITACHI', condition:'NEEDS REPAIRS', location:'SENT FOR REPAIRS', serial:'110028' },
+  { id:'T032', category:'SANDING/GRINDING', name:'Planer', stockNo:'P 002', brand:'BOSCH', condition:'NEEDS REPAIRS', location:'SENT FOR REPAIRS', serial:'0601-594-103' },
+  { id:'T033', category:'SANDING/GRINDING', name:'Angle Grinder', stockNo:'G002', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T034', category:'SANDING/GRINDING', name:'Angle Grinder', stockNo:'—', brand:'MAKITA', condition:'EXCELLENT', location:'COLLINSON', serial:'00114297' },
+  // MEASURING
+  { id:'T035', category:'MEASURING', name:'Laser Level (Large)', stockNo:'LL 001', brand:'BOSCH', condition:'EXCELLENT', location:'COLLINSON', serial:'421006200' },
+  { id:'T036', category:'MEASURING', name:'Laser Level', stockNo:'LL 002', brand:'BOSCH', condition:'GOOD', location:'COLLINSON', serial:'591002700' },
+  { id:'T037', category:'MEASURING', name:'Laser Meter', stockNo:'SNL 004', brand:'STABILA', condition:'GOOD', location:'COLLINSON', serial:'' },
+  // SILICONE GUNS
+  { id:'T038', category:'SILICONE GUNS', name:'Silicone Gun (Red)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T039', category:'SILICONE GUNS', name:'Silicone Gun (S/Steel L)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T040', category:'SILICONE GUNS', name:'Silicone Gun (S/Steel S)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T041', category:'SILICONE GUNS', name:'Silicone Gun (Yellow)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T042', category:'SILICONE GUNS', name:'Silicone Gun (Orange)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T043', category:'SILICONE GUNS', name:'PU Sealer Gun (Large) 1', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T044', category:'SILICONE GUNS', name:'PU Sealer Gun (Large) 2', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T045', category:'SILICONE GUNS', name:'PU Sealer Gun (Small)', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  // OTHER
+  { id:'T046', category:'OTHER', name:'Breaker', stockNo:'B 001', brand:'HILTI', condition:'UNKNOWN', location:'GINA', serial:'2811' },
+  { id:'T047', category:'OTHER', name:'Heat Gun', stockNo:'HG 001', brand:'MAKITA', condition:'GOOD', location:'COLLINSON', serial:'9127-07/01' },
+  { id:'T048', category:'OTHER', name:'Mortice Drill', stockNo:'MD 002', brand:'MAKITA', condition:'NEEDS REPAIRS', location:'COLLINSON', serial:'3762F' },
+  { id:'T049', category:'OTHER', name:'Battery (No Charger)', stockNo:'—', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'922030353' },
+  { id:'T050', category:'OTHER', name:'Socket Set', stockNo:'—', brand:'—', condition:'FAIR', location:'COLLINSON', serial:'' },
+  { id:'T051', category:'OTHER', name:'Battery Charger', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+  { id:'T052', category:'OTHER', name:'HILTI Multi-Tool Case', stockNo:'—', brand:'HILTI', condition:'GOOD', location:'COLLINSON', serial:'426557077' },
+  { id:'T053', category:'OTHER', name:'Temperature Thermometer', stockNo:'—', brand:'—', condition:'UNKNOWN', location:'COLLINSON', serial:'BOB0041903' },
+  { id:'T054', category:'OTHER', name:'Vacuum Cleaner w/ Pipes', stockNo:'—', brand:'—', condition:'GOOD', location:'COLLINSON', serial:'' },
+];
+
+// ═══════════════════════════════════════════
+//  DATA — Ladders (from LADDER_REGISTERS_2026.xlsx)
+// ═══════════════════════════════════════════
+
+const LADDERS_DATA = [
+  { id:'L001', type:'Step Ladder', material:'Aluminium', location:'SIMONS HOUSE', condition:'Good' },
+  { id:'L003', type:'Step Ladder', material:'Aluminium', location:'COLLINSONS', condition:'Good' },
+  { id:'L004', type:'Step Ladder', material:'Aluminium', location:'SIMONS HOUSE', condition:'Good' },
+  { id:'L006', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L008', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L009', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L010', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L011', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L012', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L013', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L014', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L016', type:'Step Ladder', material:'Aluminium', location:'STEPHEN', condition:'Good' },
+  { id:'L018', type:'Step Ladder', material:'Aluminium', location:'PAARDEN EILAND', condition:'Good' },
+  { id:'L019', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L020', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L021', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L023', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L025', type:'Step Ladder', material:'Aluminium', location:'WITH THEO', condition:'Good' },
+  { id:'L026', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L028', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L030', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L031', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+  { id:'L204', type:'Step Ladder', material:'Aluminium', location:'MILPARK', condition:'Good' },
+];
+
+// ═══════════════════════════════════════════
+//  STORAGE KEYS
+// ═══════════════════════════════════════════
+
+const STORAGE_KEY       = 'toolRegister_bookings_v3';
+const CONDITIONS_KEY    = 'toolRegister_conditions_v3';
+const LOCATIONS_KEY     = 'toolRegister_locations_v3';
+const LADDER_BOOK_KEY   = 'toolRegister_ladderBookings_v1';
+const LADDER_INSP_KEY   = 'toolRegister_ladderInspections_v1';
+const LADDER_LOC_KEY    = 'toolRegister_ladderLocations_v1';
+const LADDER_COND_KEY   = 'toolRegister_ladderConditions_v1';
+
+function loadBookings()       { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } }
+function saveBookings(b)      { localStorage.setItem(STORAGE_KEY, JSON.stringify(b)); }
+function loadConditions()     { try { return JSON.parse(localStorage.getItem(CONDITIONS_KEY) || '{}'); } catch { return {}; } }
+function saveConditions(c)    { localStorage.setItem(CONDITIONS_KEY, JSON.stringify(c)); }
+function loadLocations()      { try { return JSON.parse(localStorage.getItem(LOCATIONS_KEY) || '{}'); } catch { return {}; } }
+function saveLocations(l)     { localStorage.setItem(LOCATIONS_KEY, JSON.stringify(l)); }
+function loadLadderBookings() { try { return JSON.parse(localStorage.getItem(LADDER_BOOK_KEY) || '[]'); } catch { return []; } }
+function saveLadderBookings(b){ localStorage.setItem(LADDER_BOOK_KEY, JSON.stringify(b)); }
+function loadLadderInsp()     { try { return JSON.parse(localStorage.getItem(LADDER_INSP_KEY) || '[]'); } catch { return []; } }
+function saveLadderInsp(b)    { localStorage.setItem(LADDER_INSP_KEY, JSON.stringify(b)); }
+function loadLadderLocs()     { try { return JSON.parse(localStorage.getItem(LADDER_LOC_KEY) || '{}'); } catch { return {}; } }
+function saveLadderLocs(l)    { localStorage.setItem(LADDER_LOC_KEY, JSON.stringify(l)); }
+function loadLadderConds()    { try { return JSON.parse(localStorage.getItem(LADDER_COND_KEY) || '{}'); } catch { return {}; } }
+function saveLadderConds(c)   { localStorage.setItem(LADDER_COND_KEY, JSON.stringify(c)); }
+
+let bookings         = loadBookings();
+let conditions       = loadConditions();
+let toolLocations    = loadLocations();    // toolId -> location override
+let ladderBookings   = loadLadderBookings();
+let ladderInspections= loadLadderInsp();
+let ladderLocations  = loadLadderLocs();   // ladderId -> location override
+let ladderConditions = loadLadderConds();
+
+// Pull tool bookings from Firebase (shared with Collinson H&S app) and keep in sync.
+// Local copy above is used as an instant-load cache in case Firebase is unreachable.
+db.ref('h-and-s/toolBookings').on('value', snap => {
+  const val = snap.val() || {};
+  bookings = Object.values(val);
+  saveBookings(bookings); // refresh local cache
+  if (typeof renderDashboard === 'function') renderDashboard();
+  if (typeof renderRegister === 'function') renderRegister();
+  if (typeof renderLog === 'function') renderLog();
+  if (typeof checkOverdue === 'function') checkOverdue();
+});
+
+// ═══════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════
+
+function nowDate() { const d = new Date(); return d.toISOString().split('T')[0]; }
+function nowTime() { const d = new Date(); return d.toTimeString().slice(0,5); }
+function nowISO()  { return new Date().toISOString(); }
+
+function formatDT(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-ZA', { day:'2-digit', month:'short', year:'numeric' })
+       + ' ' + d.toTimeString().slice(0,5);
+}
+
+function daysBetween(isoA, isoB) {
+  const a = new Date(isoA), b = new Date(isoB || new Date().toISOString());
+  return (b - a) / (1000 * 60 * 60 * 24);
+}
+
+function getActiveBooking(toolId) { return bookings.find(b => b.toolId === toolId && !b.returnedAt); }
+function getToolStatus(toolId) {
+  // Manual override wins (except when actively booked out via booking system)
+  const override = toolStatusOverrides[toolId];
+  const b = getActiveBooking(toolId);
+  if (b) return daysBetween(b.bookedOutAt, null) > 2 ? 'overdue' : 'out';
+  if (override) return override; // 'available','sent_repairs','damaged','reserved','missing'
+  return 'available';
+}
+function getCondition(tool)  { return conditions[tool.id] || tool.condition; }
+function getToolLocation(tool){ return toolLocations[tool.id] || tool.location; }
+
+function condClass(c) {
+  if (!c) return 'cond-unknown';
+  const u = c.toUpperCase();
+  if (u === 'GOOD' || u === 'EXCELLENT') return 'cond-good';
+  if (u === 'FAIR') return 'cond-fair';
+  if (u.includes('REPAIR')) return 'cond-repair';
+  return 'cond-unknown';
+}
+function overdueBookings() { return bookings.filter(b => !b.returnedAt && daysBetween(b.bookedOutAt, null) > 2); }
+
+// Ladder helpers
+function getActiveLadderBooking(ladderId) { return ladderBookings.find(b => b.ladderId === ladderId && !b.returnedAt); }
+function getLadderStatus(ladderId) {
+  const b = getActiveLadderBooking(ladderId);
+  return b ? 'out' : 'available';
+}
+function getLadderLocation(ladder) { return ladderLocations[ladder.id] || ladder.location; }
+function getLadderCondition(ladder){ return ladderConditions[ladder.id] || ladder.condition; }
+function getLastInspection(ladderId) {
+  const insps = ladderInspections.filter(i => i.ladderId === ladderId);
+  if (!insps.length) return null;
+  return insps.sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+}
+
+// ═══════════════════════════════════════════
+//  CLOCK
+// ═══════════════════════════════════════════
+
+function updateClock() {
+  const d = new Date();
+  document.getElementById('liveClock').textContent =
+    d.toLocaleDateString('en-ZA', { weekday:'short', day:'2-digit', month:'short', year:'numeric' })
+    + '  ' + d.toTimeString().slice(0,8);
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ═══════════════════════════════════════════
+//  PAGE NAV
+// ═══════════════════════════════════════════
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const btns = document.querySelectorAll('.nav button');
+  const map = { dashboard:0, register:1, bookings:2, ladders:3, alerts:4, ppe:5 };
+  if (map[id] !== undefined) btns[map[id]].classList.add('active');
+  if (id === 'register')  renderRegister();
+  if (id === 'bookings')  renderLog();
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'alerts')    renderAlertsPage();
+  if (id === 'ladders')   renderLadders();
+  if (id === 'ppe')       { trRefreshPPETypeSelect(); trRenderPPEStats(); trRenderPPE(); trInitPPESig(); }
+}
+
+// ═══════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════
+
+function renderDashboard() {
+  const total   = TOOLS_DATA.length;
+  const out     = bookings.filter(b => !b.returnedAt).length;
+  const avail   = total - out;
+  const overdue = overdueBookings().length;
+  const repair  = TOOLS_DATA.filter(t => getCondition(t).toUpperCase().includes('REPAIR') || (toolStatusOverrides[t.id]||'').includes('repair')).length;
+  const lOut    = ladderBookings.filter(b => !b.returnedAt).length;
+
+  document.getElementById('statTotal').textContent   = total;
+  document.getElementById('statAvail').textContent   = avail;
+  document.getElementById('statOut').textContent     = out;
+  document.getElementById('statOverdue').textContent = overdue;
+  document.getElementById('statRepair').textContent  = repair;
+  document.getElementById('statLaddersOut').textContent = lOut;
+
+  const ab = document.getElementById('alertsBadge');
+  if (overdue > 0) { ab.textContent = overdue; ab.style.display = ''; } else ab.style.display = 'none';
+  document.getElementById('activeBookingsBadge').textContent = out;
+
+  const od = overdueBookings();
+  const dashA = document.getElementById('dashAlerts');
+  if (od.length === 0) {
+    dashA.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>No overdue tools — all clear!</p></div>';
+  } else {
+    dashA.innerHTML = od.map(b => {
+      const tool = TOOLS_DATA.find(t => t.id === b.toolId);
+      const days = Math.floor(daysBetween(b.bookedOutAt, null));
+      return `<div class="alert-item ${days > 5 ? '' : 'warning'}">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-text">
+          <strong>${tool ? tool.name : b.toolName} (${b.stockNo})</strong>
+          <span>Booked out by <b>${b.signedOutBy}</b> to <b>${b.site}</b> — since ${formatDT(b.bookedOutAt)}</span>
+        </div>
+        <div class="alert-days">${days} DAYS OUT</div>
+      </div>`;
+    }).join('');
+  }
+
+  const feed = document.getElementById('activityFeed');
+  const allActivity = [
+    ...bookings.map(b => ({ ...b, _type:'tool', _ts: b.returnedAt || b.bookedOutAt })),
+    ...ladderBookings.map(b => ({ ...b, _type:'ladder', _ts: b.returnedAt || b.bookedOutAt }))
+  ].sort((a,b) => new Date(b._ts) - new Date(a._ts)).slice(0, 10);
+
+  if (allActivity.length === 0) {
+    feed.innerHTML = '<div class="empty-state" style="padding:24px"><p>No activity yet</p></div>';
+  } else {
+    feed.innerHTML = allActivity.map(b => {
+      const returned = !!b.returnedAt;
+      const icon = b._type === 'ladder' ? '🪜' : '🔧';
+      return `<div class="activity-item">
+        <div class="activity-dot ${returned ? 'in' : 'out'}"></div>
+        <div style="flex:1">
+          ${icon} <strong>${b.toolName || b.ladderId}</strong> ${returned
+            ? `returned by <b>${b.signedInBy||b.signedOutBy}</b>`
+            : `booked out to <b>${b.site}</b> by <b>${b.signedOutBy}</b>`}
+          <div class="activity-meta">${formatDT(returned ? b.returnedAt : b.bookedOutAt)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ═══════════════════════════════════════════
+//  TOOL REGISTER — editable location
+// ═══════════════════════════════════════════
+
+function renderRegister() {
+  const q       = (document.getElementById('toolSearch').value || '').toLowerCase();
+  const cat     = document.getElementById('catFilter').value;
+  const statusF = document.getElementById('statusFilter').value;
+
+  const cats = [...new Set(TOOLS_DATA.map(t => t.category))].sort();
+  const catSel = document.getElementById('catFilter');
+  if (catSel.options.length <= 1) {
+    cats.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+  }
+
+  const filtered = TOOLS_DATA.filter(t => {
+    const status = getToolStatus(t.id);
+    const loc    = getToolLocation(t);
+    const text   = [t.category, t.name, t.stockNo, t.brand, loc, t.serial].join(' ').toLowerCase();
+    return (!q || text.includes(q)) && (!cat || t.category === cat) && (!statusF || status === statusF);
+  });
+
+  const tbody = document.getElementById('registerBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">No tools match your filters</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(t => {
+    const status = getToolStatus(t.id);
+    const ab     = getActiveBooking(t.id);
+    const cond   = getCondition(t);
+    const loc    = getToolLocation(t);
+
+    let statusHtml = '';
+    if (status === 'available') statusHtml = '<span class="status-pill available">● Available</span>';
+    else if (status === 'out') statusHtml = `<span class="status-pill out">● Out — ${ab ? ab.site : ''}</span>`;
+    else statusHtml = `<span class="status-pill overdue">⚠ OVERDUE</span>`;
+
+    const rowClass = status === 'overdue' ? 'overdue-row' : status === 'out' ? 'out-row' : '';
+    const actionBtn = status === 'available'
+      ? `<button class="btn small" onclick="openBookOut('${t.id}')">📤 Book Out</button>`
+      : `<button class="btn success small" onclick="openReturn('${t.id}')">📥 Return</button>`;
+
+    const condOpts = CONDITION_OPTIONS.map(o => `<option value="${o}"${o===cond?' selected':''}>${o.charAt(0)+o.slice(1).toLowerCase()}</option>`).join('');
+    const statOpts = STATUS_OPTIONS.map(o => {
+      const val = o.toLowerCase().replace(/[^a-z]/g,'_').replace(/_+/g,'_');
+      const curVal = toolStatusOverrides[t.id] || 'available';
+      const isSel  = (val === curVal && !getActiveBooking(t.id)) || (o==='Available' && !toolStatusOverrides[t.id] && !getActiveBooking(t.id));
+      return `<option value="${val}"${isSel?' selected':''}>${o}</option>`;
+    }).join('');
+
+    return `<tr class="${rowClass}">
+      <td><span class="category-badge">${t.category}</span></td>
+      <td><strong>${t.name}</strong>${t.serial ? `<br><span style="font-size:11px;color:var(--muted)">${t.serial}</span>` : ''}</td>
+      <td style="font-family:monospace;font-size:12px">${t.stockNo}</td>
+      <td>${t.brand || '—'}</td>
+      <td>
+        <select class="inline-edit-select cond-select" onchange="saveCondEdit('${t.id}',this.value)" title="Edit condition">
+          ${condOpts}
+        </select>
+      </td>
+      <td id="loc-cell-${t.id}">
+        <span class="loc-display" onclick="editLocation('${t.id}')">
+          ${loc} <span class="loc-edit-icon">✏️</span>
+        </span>
+      </td>
+      <td>
+        ${getActiveBooking(t.id) ? statusHtml : `<select class="inline-edit-select status-select" onchange="saveStatusEdit('${t.id}',this.value)" title="Edit status">${statOpts}</select>`}
+      </td>
+      <td>${actionBtn}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saveCondEdit(toolId, val) {
+  toolCondOverrides[toolId] = val;
+  saveCondOverrides();
+  showToast(`✅ Condition updated to ${val}`, 'success');
+  renderRegister();
+  renderDashboard();
+}
+
+function saveStatusEdit(toolId, val) {
+  if (val === 'available') {
+    delete toolStatusOverrides[toolId];
+  } else {
+    toolStatusOverrides[toolId] = val;
+  }
+  saveStatusOverrides();
+  const labels = { sent_repairs:'Sent for Repairs', damaged_out_of_service:'Damaged — Out of Service', reserved:'Reserved', lost_missing:'Lost / Missing', booked_out:'Booked Out' };
+  showToast(`✅ Status updated to ${labels[val] || val}`, 'success');
+  renderRegister();
+  renderDashboard();
+}
+
+function editLocation(toolId) {
+  const cell = document.getElementById('loc-cell-' + toolId);
+  const tool = TOOLS_DATA.find(t => t.id === toolId);
+  const current = getToolLocation(tool);
+  cell.innerHTML = `<input class="loc-input" id="loc-input-${toolId}" value="${current}" 
+    onblur="saveLocation('${toolId}')" 
+    onkeydown="if(event.key==='Enter')saveLocation('${toolId}');if(event.key==='Escape')renderRegister();">`;
+  document.getElementById('loc-input-' + toolId).focus();
+}
+
+function saveLocation(toolId) {
+  const input = document.getElementById('loc-input-' + toolId);
+  if (!input) return;
+  const val = input.value.trim();
+  if (val) {
+    toolLocations[toolId] = val;
+    saveLocations(toolLocations);
+    showToast(`📍 Location updated`, 'success');
+  }
+  renderRegister();
+}
+
+// ═══════════════════════════════════════════
+//  BOOKING LOG
+// ═══════════════════════════════════════════
+
+function renderLog() {
+  const q  = (document.getElementById('logSearch').value || '').toLowerCase();
+  const sf = document.getElementById('logStatusFilter').value;
+  const sorted = [...bookings].reverse();
+  const filtered = sorted.filter(b => {
+    const text     = [b.toolName, b.stockNo, b.signedOutBy, b.site, b.signedInBy||''].join(' ').toLowerCase();
+    const returned = !!b.returnedAt;
+    return (!q || text.includes(q)) && (!sf || (sf === 'returned' ? returned : !returned));
+  });
+
+  const tbody = document.getElementById('logBody');
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:32px;color:var(--muted)">No bookings found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(b => {
+    const returned = !!b.returnedAt;
+    const days = daysBetween(b.bookedOutAt, b.returnedAt || null);
+    const daysStr = returned ? `${days.toFixed(1)}d` : `${days.toFixed(1)}d ongoing`;
+    const statusPill = returned
+      ? '<span class="status-pill available">✓ Returned</span>'
+      : (days > 2 ? '<span class="status-pill overdue">⚠ OVERDUE</span>' : '<span class="status-pill out">● Out</span>');
+    const action = returned ? '' : `<button class="btn success small" onclick="openReturn_byBookingId('${b.id}')">📥 Return</button>`;
+
+    return `<tr>
+      <td><strong>${b.toolName}</strong></td>
+      <td style="font-family:monospace;font-size:12px">${b.stockNo}</td>
+      <td>${b.signedOutBy}${b.outSig ? ' ✍' : ''}</td>
+      <td>${b.site}</td>
+      <td style="font-size:12px">${formatDT(b.bookedOutAt)}</td>
+      <td style="font-size:12px">${returned ? formatDT(b.returnedAt) : '—'}</td>
+      <td>${b.signedInBy ? b.signedInBy + (b.inSig ? ' ✍' : '') : '—'}</td>
+      <td style="font-size:12px;color:var(--muted)">${daysStr}</td>
+      <td>${statusPill}</td>
+      <td>${action}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  ALERTS PAGE
+// ═══════════════════════════════════════════
+
+function renderAlertsPage() {
+  const od = overdueBookings();
+  const container = document.getElementById('alertsPage');
+  if (od.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">✅</div><p>No overdue tools — all clear!</p></div>';
+    return;
+  }
+  container.innerHTML = od.map(b => {
+    const days = Math.floor(daysBetween(b.bookedOutAt, null));
+    return `<div class="alert-item">
+      <div class="alert-icon">🚨</div>
+      <div class="alert-text">
+        <strong>${b.toolName} — Stock: ${b.stockNo}</strong>
+        <span>Signed out by <b>${b.signedOutBy}</b> to <b>${b.site}</b></span>
+        <span>Out since: ${formatDT(b.bookedOutAt)}</span>
+      </div>
+      <div style="text-align:right">
+        <div class="alert-days">${days} DAYS</div>
+        <button class="btn success small" style="margin-top:8px" onclick="openReturn_byBookingId('${b.id}')">📥 Return Now</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════
+//  LADDER REGISTER
+// ═══════════════════════════════════════════
+
+function renderLadders() {
+  const q       = (document.getElementById('ladderSearch').value || '').toLowerCase();
+  const locF    = document.getElementById('ladderLocFilter').value;
+  const statusF = document.getElementById('ladderStatusFilter').value;
+
+  // Populate location filter
+  const locSel = document.getElementById('ladderLocFilter');
+  if (locSel.options.length <= 1) {
+    const locs = [...new Set(LADDERS_DATA.map(l => getLadderLocation(l)))].sort();
+    locs.forEach(loc => { const o = document.createElement('option'); o.value = loc; o.textContent = loc; locSel.appendChild(o); });
+  }
+
+  const filtered = LADDERS_DATA.filter(l => {
+    const status = getLadderStatus(l.id);
+    const loc    = getLadderLocation(l);
+    const text   = [l.id, l.type, loc].join(' ').toLowerCase();
+    return (!q || text.includes(q)) && (!locF || loc === locF) && (!statusF || status === statusF);
+  });
+
+  const grid = document.getElementById('ladderGrid');
+  if (filtered.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="padding:48px;text-align:center;color:var(--muted)">No ladders match your filters</div>';
+    return;
+  }
+
+  grid.innerHTML = filtered.map(l => {
+    const status   = getLadderStatus(l.id);
+    const loc      = getLadderLocation(l);
+    const cond     = getLadderCondition(l);
+    const activeB  = getActiveLadderBooking(l.id);
+    const lastInsp = getLastInspection(l.id);
+
+    const statusPill = status === 'available'
+      ? '<span class="status-pill available">● Available</span>'
+      : `<span class="status-pill out">● Out — ${activeB ? activeB.site : ''}</span>`;
+
+    const condPill = `<span class="cond-pill ${condClass(cond)}">${cond}</span>`;
+
+    const actionBtn = status === 'available'
+      ? `<button class="btn small" onclick="openLadderBookOut('${l.id}')">📤 Book Out</button>`
+      : `<button class="btn success small" onclick="openLadderReturn('${l.id}')">📥 Return</button>`;
+
+    const inspBadge = lastInsp
+      ? `<span class="insp-result ${lastInsp.overall.includes('Good') ? 'insp-pass' : 'insp-fail'}">${lastInsp.overall === 'Good condition' ? '✓ PASS' : '✗ ACTION NEEDED'}</span>`
+      : '<span style="font-size:11px;color:var(--muted)">No inspection</span>';
+
+    // Recent log entries for this ladder
+    const recentLogs = [
+      ...ladderBookings.filter(b => b.ladderId === l.id).map(b => ({
+        ts: b.returnedAt || b.bookedOutAt,
+        type: b.returnedAt ? 'in' : 'out',
+        label: b.returnedAt ? `Returned by ${b.signedInBy || b.signedOutBy}` : `Booked out to ${b.site} by ${b.signedOutBy}`
+      })),
+      ...ladderInspections.filter(i => i.ladderId === l.id).map(i => ({
+        ts: i.date,
+        type: 'inspect',
+        label: `Inspected by ${i.inspector} — ${i.overall}`
+      }))
+    ].sort((a,b) => new Date(b.ts) - new Date(a.ts)).slice(0,4);
+
+    const logHtml = recentLogs.length
+      ? recentLogs.map(e => `<div class="ladder-log-entry">
+          <span class="log-type ${e.type}">${e.type === 'out' ? '📤 OUT' : e.type === 'in' ? '📥 IN' : '🔍 INSP'}</span>
+          <span>${e.label} · ${formatDT(e.ts)}</span>
+        </div>`).join('')
+      : '<div style="font-size:11px;color:var(--muted);padding:4px 0">No activity recorded</div>';
+
+    return `<div class="ladder-card">
+      <div class="ladder-card-header">
+        <div class="ladder-id">${l.id}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600">${l.type}</div>
+          <div style="font-size:11px;color:var(--muted)">${l.material}</div>
+        </div>
+        ${statusPill}
+      </div>
+      <div class="ladder-card-body">
+        <div class="ladder-meta">
+          <span><strong id="lloc-${l.id}">${loc}</strong> Base Location
+            <button class="btn secondary small" style="margin-top:4px;font-size:10px;padding:2px 8px" onclick="editLadderLocation('${l.id}')">✏️ Edit</button>
+          </span>
+          <span>${condPill} Condition</span>
+        </div>
+        <div class="ladder-status-row">
+          ${actionBtn}
+          <button class="btn secondary small ladder-inspect-btn" onclick="openLadderInspect('${l.id}')">🔍 Log Inspection</button>
+          ${inspBadge}
+        </div>
+        ${activeB ? `<div style="font-size:11px;color:var(--warning);margin-bottom:8px">⚠️ Currently at <b>${activeB.site}</b> — taken by <b>${activeB.signedOutBy}</b> on ${formatDT(activeB.bookedOutAt)}</div>` : ''}
+        <div class="ladder-history">
+          <div class="ladder-history-title">Recent Activity</div>
+          ${logHtml}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function editLadderLocation(ladderId) {
+  const ladder = LADDERS_DATA.find(l => l.id === ladderId);
+  const current = getLadderLocation(ladder);
+  const newLoc = prompt(`Update base location for ${ladderId}:`, current);
+  if (newLoc && newLoc.trim()) {
+    ladderLocations[ladderId] = newLoc.trim().toUpperCase();
+    saveLadderLocs(ladderLocations);
+    showToast(`📍 ${ladderId} location updated to ${newLoc.trim().toUpperCase()}`, 'success');
+    renderLadders();
+  }
+}
+
+// ═══════════════════════════════════════════
+//  LADDER BOOK OUT
+// ═══════════════════════════════════════════
+
+let currentLadderId = null;
+
+function openLadderBookOut(ladderId) {
+  currentLadderId = ladderId;
+  const l = LADDERS_DATA.find(x => x.id === ladderId);
+  document.getElementById('ladderBookOutTitle').textContent = `Book Out: ${ladderId}`;
+  document.getElementById('ladderBookOutSub').textContent   = `${l.type} · ${l.material} · Base: ${getLadderLocation(l)}`;
+  document.getElementById('lOutDate').value = nowDate();
+  document.getElementById('lOutTime').value = nowTime();
+  document.getElementById('lOutName').value = '';
+  document.getElementById('lOutSite').value = '';
+  document.getElementById('lOutNotes').value = '';
+  document.getElementById('ladderBookOutModal').classList.add('open');
+  setTimeout(() => setupSigPad('sigCanvasLadderOut'), 100);
+}
+
+function confirmLadderBookOut() {
+  const name = document.getElementById('lOutName').value.trim();
+  const site = document.getElementById('lOutSite').value.trim();
+  if (!name) { showToast('Please enter the name of who is taking the ladder.', 'error'); return; }
+  if (!site) { showToast('Please enter the destination site.', 'error'); return; }
+  if (isSigEmpty('sigCanvasLadderOut')) { showToast('A signature is required.', 'error'); return; }
+  const l = LADDERS_DATA.find(x => x.id === currentLadderId);
+  const sig = document.getElementById('sigCanvasLadderOut').toDataURL();
+  ladderBookings.push({
+    id: Date.now().toString(),
+    ladderId: currentLadderId,
+    signedOutBy: name,
+    site,
+    notes: document.getElementById('lOutNotes').value.trim(),
+    bookedOutAt: nowISO(),
+    outSig: sig,
+    returnedAt: null,
+    signedInBy: null,
+    inSig: null,
+    returnCondition: null,
+  });
+  saveLadderBookings(ladderBookings);
+  closeModal('ladderBookOutModal');
+  showToast(`✅ ${currentLadderId} booked out to ${site} by ${name}`, 'success');
+  renderLadders();
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════
+//  LADDER RETURN
+// ═══════════════════════════════════════════
+
+function openLadderReturn(ladderId) {
+  currentLadderId = ladderId;
+  const b = getActiveLadderBooking(ladderId);
+  document.getElementById('ladderReturnTitle').textContent = `Return: ${ladderId}`;
+  document.getElementById('ladderReturnSub').textContent   = b ? `Originally booked out by ${b.signedOutBy} to ${b.site}` : '';
+  document.getElementById('lInDate').value = nowDate();
+  document.getElementById('lInTime').value = nowTime();
+  document.getElementById('lInName').value = '';
+  document.getElementById('lInNotes').value = '';
+  document.getElementById('ladderReturnModal').classList.add('open');
+  setTimeout(() => setupSigPad('sigCanvasLadderIn'), 100);
+}
+
+function confirmLadderReturn() {
+  const name = document.getElementById('lInName').value.trim();
+  if (!name) { showToast('Please enter who is returning the ladder.', 'error'); return; }
+  if (isSigEmpty('sigCanvasLadderIn')) { showToast('A signature is required.', 'error'); return; }
+  const b = getActiveLadderBooking(currentLadderId);
+  if (!b) return;
+  const sig  = document.getElementById('sigCanvasLadderIn').toDataURL();
+  const cond = document.getElementById('lInCondition').value;
+  b.returnedAt       = nowISO();
+  b.signedInBy       = name;
+  b.inSig            = sig;
+  b.returnCondition  = cond;
+  b.returnNotes      = document.getElementById('lInNotes').value.trim();
+  if (cond) { ladderConditions[currentLadderId] = cond; saveLadderConds(ladderConditions); }
+  saveLadderBookings(ladderBookings);
+  closeModal('ladderReturnModal');
+  showToast(`✅ ${currentLadderId} returned by ${name} — condition: ${cond}`, 'success');
+  renderLadders();
+  renderDashboard();
+}
+
+// ═══════════════════════════════════════════
+//  LADDER INSPECTION
+// ═══════════════════════════════════════════
+
+function openLadderInspect(ladderId) {
+  currentLadderId = ladderId;
+  document.getElementById('ladderInspectTitle').textContent = `Inspection: ${ladderId}`;
+  document.getElementById('ladderInspectSub').textContent   = `Step Ladder · Monthly H&S check`;
+  document.getElementById('inspDate').value = nowDate();
+  document.getElementById('inspName').value = '';
+  document.getElementById('inspNotes').value = '';
+  ['ic0','ic1','ic2','ic3','ic4','ic5','ic6'].forEach(id => { document.getElementById(id).value = 'Pass'; });
+  document.getElementById('inspTagged').value  = 'No';
+  document.getElementById('inspOverall').value = 'Good condition';
+  document.getElementById('ladderInspectModal').classList.add('open');
+  setTimeout(() => setupSigPad('sigCanvasInspect'), 100);
+}
+
+function confirmInspection() {
+  const inspector = document.getElementById('inspName').value.trim();
+  if (!inspector) { showToast('Please enter the inspector name.', 'error'); return; }
+  if (isSigEmpty('sigCanvasInspect')) { showToast('A signature is required.', 'error'); return; }
+
+  const checks = ['Steps','Rails','Pail shelf','Top','Spreader','General','Other'].map((label, i) => ({
+    label, result: document.getElementById('ic' + i).value
+  }));
+
+  ladderInspections.push({
+    id: Date.now().toString(),
+    ladderId: currentLadderId,
+    date: nowISO(),
+    inspector,
+    checks,
+    tagged:  document.getElementById('inspTagged').value,
+    overall: document.getElementById('inspOverall').value,
+    notes:   document.getElementById('inspNotes').value.trim(),
+    sig: document.getElementById('sigCanvasInspect').toDataURL(),
+  });
+  saveLadderInsp(ladderInspections);
+
+  const overall = document.getElementById('inspOverall').value;
+  if (overall !== 'Good condition') {
+    ladderConditions[currentLadderId] = overall === 'Requires attention' ? 'FAIR' : 'NEEDS REPAIRS';
+    saveLadderConds(ladderConditions);
+  } else {
+    ladderConditions[currentLadderId] = 'Good';
+    saveLadderConds(ladderConditions);
+  }
+
+  closeModal('ladderInspectModal');
+  showToast(`✅ Inspection logged for ${currentLadderId} by ${inspector}`, 'success');
+  renderLadders();
+}
+
+// ═══════════════════════════════════════════
+//  SIGNATURE PAD
+// ═══════════════════════════════════════════
+
+function setupSigPad(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+
+  // Resize canvas to its actual rendered pixel size so touch coordinates map correctly
+  const rect = canvas.getBoundingClientRect();
+  const dpr  = window.devicePixelRatio || 1;
+  canvas.width  = Math.round(rect.width  * dpr);
+  canvas.height = Math.round(rect.height * dpr);
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, rect.width, rect.height);
+  ctx.strokeStyle = '#1e293b';
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  let drawing = false;
+  let lastX = 0, lastY = 0;
+
+  function getPos(e) {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left), y: (src.clientY - r.top) };
+  }
+  canvas.onmousedown = canvas.ontouchstart = e => {
+    e.preventDefault();
+    drawing = true;
+    const p = getPos(e);
+    lastX = p.x; lastY = p.y;
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  };
+  canvas.onmousemove = canvas.ontouchmove = e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const p = getPos(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+    lastX = p.x; lastY = p.y;
+  };
+  canvas.onmouseup = canvas.ontouchend = canvas.onmouseleave = e => { drawing = false; };
+}
+
+function clearSig()       { clearCanvas('sigCanvas'); }
+function clearSigReturn() { clearCanvas('sigCanvasReturn'); }
+function clearLadderOutSig() { clearCanvas('sigCanvasLadderOut'); }
+function clearLadderInSig()  { clearCanvas('sigCanvasLadderIn'); }
+function clearInspSig()   { clearCanvas('sigCanvasInspect'); }
+
+function clearCanvas(id) {
+  const c = document.getElementById(id);
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, c.width, c.height);
+}
+
+function isSigEmpty(canvasId) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return true;
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  // Sample every 8th pixel for speed — any non-white pixel = signed
+  for (let i = 0; i < data.length; i += 32) {
+    if (data[i] < 245 || data[i+1] < 245 || data[i+2] < 245) return false;
+  }
+  return true;
+}
+
+// ═══════════════════════════════════════════
+//  TOOL BOOK OUT / RETURN MODALS
+// ═══════════════════════════════════════════
+
+let currentToolId = null;
+let currentBookingId = null;
+
+function openBookOut(toolId) {
+  currentToolId = toolId;
+  const tool = TOOLS_DATA.find(t => t.id === toolId);
+  document.getElementById('bookOutTitle').textContent = 'Book Out: ' + tool.name;
+  document.getElementById('bookOutSub').textContent   = `Stock: ${tool.stockNo}  |  ${tool.category}  |  Brand: ${tool.brand}`;
+  document.getElementById('outDate').value = nowDate();
+  document.getElementById('outTime').value = nowTime();
+  document.getElementById('outName').value = '';
+  document.getElementById('outSite').value = '';
+  document.getElementById('outNotes').value = '';
+  document.getElementById('bookOutModal').classList.add('open');
+  setTimeout(() => setupSigPad('sigCanvas'), 100);
+}
+
+function confirmBookOut() {
+  const name = document.getElementById('outName').value.trim();
+  const site = document.getElementById('outSite').value.trim();
+  if (!name) { showToast('Please enter the name of who is taking the tool.', 'error'); return; }
+  if (!site) { showToast('Please enter the site / destination location.', 'error'); return; }
+  if (isSigEmpty('sigCanvas')) { showToast('A signature is required to book out a tool.', 'error'); return; }
+  const tool = TOOLS_DATA.find(t => t.id === currentToolId);
+  const sig  = document.getElementById('sigCanvas').toDataURL();
+  const newBooking = {
+    id: Date.now().toString(),
+    toolId: currentToolId, toolName: tool.name, stockNo: tool.stockNo, category: tool.category,
+    signedOutBy: name, site, notes: document.getElementById('outNotes').value.trim(),
+    bookedOutAt: nowISO(), outSig: sig,
+    returnedAt: null, signedInBy: null, inSig: null, returnCondition: null, returnNotes: null,
+  };
+  bookings.push(newBooking);
+  saveBookings(bookings);
+  fbSaveToolBooking(newBooking); // push to Firebase so Collinson H&S app updates too
+  closeModal('bookOutModal');
+  showToast(`✅ ${tool.name} booked out to ${site} by ${name}`, 'success');
+  renderDashboard();
+  renderRegister();
+}
+
+function openReturn(toolId) {
+  const b = getActiveBooking(toolId);
+  if (!b) return;
+  currentBookingId = b.id;
+  const tool = TOOLS_DATA.find(t => t.id === toolId);
+  document.getElementById('returnTitle').textContent = 'Return: ' + tool.name;
+  document.getElementById('returnSub').textContent   = `Originally booked out by ${b.signedOutBy} to ${b.site}`;
+  document.getElementById('inDate').value = nowDate();
+  document.getElementById('inTime').value = nowTime();
+  document.getElementById('inName').value = '';
+  document.getElementById('inNotes').value = '';
+  document.getElementById('returnModal').classList.add('open');
+  setTimeout(() => setupSigPad('sigCanvasReturn'), 100);
+}
+
+function openReturn_byBookingId(bookingId) {
+  const b = bookings.find(x => x.id === bookingId);
+  if (!b) return;
+  openReturn(b.toolId);
+}
+
+function confirmReturn() {
+  const name = document.getElementById('inName').value.trim();
+  if (!name) { showToast('Please enter who is returning the tool.', 'error'); return; }
+  if (isSigEmpty('sigCanvasReturn')) { showToast('A signature is required to return a tool.', 'error'); return; }
+  const sig  = document.getElementById('sigCanvasReturn').toDataURL();
+  const cond = document.getElementById('inCondition').value;
+  const b    = bookings.find(x => x.id === currentBookingId);
+  b.returnedAt = nowISO(); b.signedInBy = name; b.inSig = sig; b.returnCondition = cond;
+  b.returnNotes = document.getElementById('inNotes').value.trim();
+  if (cond) { conditions[b.toolId] = cond; saveConditions(conditions); }
+  saveBookings(bookings);
+  fbSaveToolBooking(b); // push return update to Firebase so Collinson H&S app updates too
+  closeModal('returnModal');
+  showToast(`✅ ${b.toolName} returned by ${name} — condition: ${cond}`, 'success');
+  renderDashboard();
+  renderRegister();
+}
+
+// ═══════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════
+
+function exportLog() {
+  const headers = ['Tool Name','Stock No','Category','Signed Out By','Site','Date Out','Date In','Signed In By','Duration (days)','Status','Return Condition','Notes Out','Notes In'];
+  const rows = bookings.map(b => {
+    const returned = !!b.returnedAt;
+    const days = daysBetween(b.bookedOutAt, b.returnedAt || null).toFixed(1);
+    return [
+      b.toolName, b.stockNo, b.category, b.signedOutBy, b.site,
+      formatDT(b.bookedOutAt), returned ? formatDT(b.returnedAt) : '',
+      b.signedInBy || '', days,
+      returned ? 'Returned' : (parseFloat(days) > 2 ? 'OVERDUE' : 'Out'),
+      b.returnCondition || '', b.notes || '', b.returnNotes || ''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv' }));
+  a.download = `tool_register_log_${nowDate()}.csv`;
+  a.click();
+}
+
+function exportLadderLog() {
+  const headers = ['Ladder ID','Signed Out By','Site','Date Out','Date In','Signed In By','Return Condition','Notes'];
+  const rows = ladderBookings.map(b => {
+    const returned = !!b.returnedAt;
+    return [
+      b.ladderId, b.signedOutBy, b.site,
+      formatDT(b.bookedOutAt), returned ? formatDT(b.returnedAt) : '',
+      b.signedInBy || '', b.returnCondition || '', b.returnNotes || ''
+    ].map(v => `"${String(v).replace(/"/g,'""')}"`).join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv' }));
+  a.download = `ladder_register_log_${nowDate()}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════
+//  MODAL HELPERS
+// ═══════════════════════════════════════════
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════
+
+function showToast(msg, type = 'success') {
+  const tc = document.getElementById('toast-container');
+  const t  = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${msg}</span>`;
+  tc.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.4s'; setTimeout(() => t.remove(), 400); }, 3500);
+}
+
+// ═══════════════════════════════════════════
+//  OVERDUE CHECKER
+// ═══════════════════════════════════════════
+
+function checkOverdue() {
+  const od = overdueBookings();
+  if (od.length > 0) {
+    const ab = document.getElementById('alertsBadge');
+    ab.textContent = od.length;
+    ab.style.display = '';
+    document.getElementById('activeBookingsBadge').textContent = bookings.filter(b => !b.returnedAt).length;
+  }
+}
+setInterval(checkOverdue, 60000);
+
+// ═══════════════════════════════════════════
+//  PPE REGISTER
+// ═══════════════════════════════════════════
+
+const TR_PPE_SEED = [
+  { id:'s001', person:'ROELOF PAUL',     role:'Supervisor',    item:'Golf Shirt (Blue)',  qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s002', person:'ROELOF PAUL',     role:'Supervisor',    item:'Golf Shirt (Grey)',  qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s003', person:'ROELOF PAUL',     role:'Supervisor',    item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s004', person:'ROELOF PAUL',     role:'Supervisor',    item:'Reflective Jacket',  qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s005', person:'ROELOF PAUL',     role:'Supervisor',    item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s006', person:'ROELOF PAUL',     role:'Supervisor',    item:'Safety Boots',       qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s007', person:'BRAD AYRTON',     role:'Supervisor',    item:'Golf Shirt (Blue)',  qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s008', person:'BRAD AYRTON',     role:'Supervisor',    item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'Safety Vest' },
+  { id:'s009', person:'BRAD AYRTON',     role:'Supervisor',    item:'Safety Boots',       qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s010', person:'MARLON CAROLUS',  role:'Painter',       item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s011', person:'MARLON CAROLUS',  role:'Painter',       item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s012', person:'MARLON CAROLUS',  role:'Painter',       item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s013', person:'MARLON CAROLUS',  role:'Painter',       item:'Safety Boots',       qty:1, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s014', person:'DAWOOD CAROLUS',  role:'Painter',       item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s015', person:'DAWOOD CAROLUS',  role:'Painter',       item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s016', person:'DAWOOD CAROLUS',  role:'Painter',       item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s017', person:'DAWOOD CAROLUS',  role:'Painter',       item:'Safety Boots',       qty:1, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s018', person:'REAGAN CAROLUS',  role:'Painter',       item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s019', person:'REAGAN CAROLUS',  role:'Painter',       item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s020', person:'REAGAN CAROLUS',  role:'Painter',       item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s021', person:'REAGAN CAROLUS',  role:'Painter',       item:'Safety Boots',       qty:1, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s022', person:'ISAAC MITCHELL',  role:'Subcontractor', item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s023', person:'ISAAC MITCHELL',  role:'Subcontractor', item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s024', person:'ISAAC MITCHELL',  role:'Subcontractor', item:'Safety Boots',       qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s025', person:'RICHARD',         role:'Subcontractor', item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s026', person:'RICHARD',         role:'Subcontractor', item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s027', person:'RICHARD',         role:'Subcontractor', item:'Safety Boots',       qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s028', person:'LIZWI MAYEZANA',  role:'Labourer',      item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s029', person:'LIZWI MAYEZANA',  role:'Labourer',      item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s030', person:'LIZWI MAYEZANA',  role:'Labourer',      item:'Blue Overalls',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s031', person:'LIZWI MAYEZANA',  role:'Labourer',      item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s032', person:'LENNOX MGOMSO',   role:'Labourer',      item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s033', person:'LENNOX MGOMSO',   role:'Labourer',      item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s034', person:'LENNOX MGOMSO',   role:'Labourer',      item:'Blue Overalls',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s035', person:'LENNOX MGOMSO',   role:'Labourer',      item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s036', person:'ZAMA QOTI',       role:'Labourer',      item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s037', person:'ZAMA QOTI',       role:'Labourer',      item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s038', person:'ZAMA QOTI',       role:'Labourer',      item:'Blue Overalls',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s039', person:'ZAMA QOTI',       role:'Labourer',      item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+  { id:'s040', person:'SIBONGILE APLENI',role:'Labourer',      item:'White T-Shirt',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s041', person:'SIBONGILE APLENI',role:'Labourer',      item:'Reflective Vest',    qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s042', person:'SIBONGILE APLENI',role:'Labourer',      item:'Blue Overalls',      qty:1, status:'Issued', date:'2026-04-07', sig:null, notes:'' },
+  { id:'s043', person:'SIBONGILE APLENI',role:'Labourer',      item:'Safety Goggles',     qty:0, status:'Own',    date:'2026-04-07', sig:null, notes:'Own' },
+];
+
+const TR_PPE_STORAGE = 'toolReg_ppeIssues_v1';
+const TR_PPE_TYPES_K = 'toolReg_ppeTypes_v1';
+const TR_DEFAULT_PPE_TYPES = [
+  'Golf Shirt (Blue)', 'Golf Shirt (Grey)', 'White T-Shirt',
+  'Reflective Vest', 'Reflective Jacket', 'Blue Overalls',
+  'Safety Goggles', 'Safety Boots', 'Hard Hat', 'Gloves', 'Dust Mask', 'Ear Protection'
+];
+function trLoadPPETypes() { try { return JSON.parse(localStorage.getItem(TR_PPE_TYPES_K)||'null')||TR_DEFAULT_PPE_TYPES.slice(); } catch { return TR_DEFAULT_PPE_TYPES.slice(); } }
+function trSavePPETypes(t){ localStorage.setItem(TR_PPE_TYPES_K, JSON.stringify(t)); }
+function trLoadPPEIssues(){ try { return JSON.parse(localStorage.getItem(TR_PPE_STORAGE)||'[]'); } catch { return []; } }
+function trSavePPEIssues(d){ localStorage.setItem(TR_PPE_STORAGE, JSON.stringify(d)); }
+
+let trPPEIssues = trLoadPPEIssues();
+let trPPETypes  = trLoadPPETypes();
+function trAllPPE() { return [...TR_PPE_SEED, ...trPPEIssues]; }
+
+function trRefreshPPETypeSelect() {
+  const sel = document.getElementById('tr_ppItemSelect');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = trPPETypes.map(t => `<option value="${t}"${t===cur?' selected':''}>${t}</option>`).join('');
+  const dl = document.getElementById('tr_ppeNameList');
+  if (dl) {
+    const people = [...new Set(trAllPPE().map(e => e.person))].sort();
+    dl.innerHTML = people.map(p => `<option value="${p}">`).join('');
+  }
+}
+
+function trAddPPEType() {
+  const input = document.getElementById('tr_newPPEType');
+  const val = input.value.trim();
+  if (!val) { showToast('Enter an item name', 'error'); return; }
+  if (trPPETypes.includes(val)) { showToast('Already exists', 'error'); return; }
+  trPPETypes.push(val);
+  trSavePPETypes(trPPETypes);
+  input.value = '';
+  trRefreshPPETypeSelect();
+  showToast(`✅ "${val}" added`);
+}
+
+function trInitPPESig() {
+  setTimeout(() => setupSigPad('tr_ppeSig'), 100);
+}
+
+function trAddPPE() {
+  const name   = (document.getElementById('tr_ppeNewName').value||'').trim().toUpperCase();
+  const role   = document.getElementById('tr_ppeNewRole').value;
+  const item   = document.getElementById('tr_ppItemSelect').value;
+  const qty    = parseInt(document.getElementById('tr_ppeQty').value)||1;
+  const status = document.getElementById('tr_ppeStatus').value;
+  const date   = document.getElementById('tr_ppeDate').value;
+  const notes  = (document.getElementById('tr_ppeNotes').value||'').trim();
+  let sig = null;
+  const c = document.getElementById('tr_ppeSig');
+  if (c && !isSigEmpty('tr_ppeSig')) sig = c.toDataURL();
+
+  if (!name) { showToast('Enter a name', 'error'); return; }
+  if (!date) { showToast('Enter the issue date', 'error'); return; }
+  if (status === 'Issued' && !sig) { showToast('Signature required for DNC-supplied PPE', 'error'); return; }
+
+  trPPEIssues.push({ id:'u'+Date.now(), person:name, role, item, qty, status, date, sig, notes });
+  trSavePPEIssues(trPPEIssues);
+  document.getElementById('tr_ppeNewName').value = '';
+  document.getElementById('tr_ppeNotes').value   = '';
+  document.getElementById('tr_ppeQty').value     = 1;
+  clearCanvas('tr_ppeSig');
+  trRenderPPEStats();
+  trRenderPPE();
+  showToast(`✅ ${item} issued to ${name}`);
+}
+
+function trRemovePPE(id) {
+  if (!confirm('Remove this entry?')) return;
+  trPPEIssues = trPPEIssues.filter(e => e.id !== id);
+  trSavePPEIssues(trPPEIssues);
+  trRenderPPEStats();
+  trRenderPPE();
+  showToast('Removed');
+}
+
+function trRenderPPEStats() {
+  const all     = trAllPPE();
+  const people  = [...new Set(all.map(e => e.person))];
+  const issued  = all.filter(e => e.status === 'Issued' && e.qty > 0).reduce((s,e) => s+e.qty, 0);
+  const noIssue = people.filter(p => !all.find(e => e.person===p && e.status==='Issued' && e.qty>0)).length;
+  const el = document.getElementById('ppeStatCards');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="stat-card"><div class="stat-num">${people.length}</div><div class="stat-label">Personnel</div></div>
+    <div class="stat-card green"><div class="stat-num">${issued}</div><div class="stat-label">DNC Items Issued</div></div>
+    <div class="stat-card blue"><div class="stat-num">${all.length}</div><div class="stat-label">PPE Records</div></div>
+    <div class="stat-card ${noIssue>0?'red':'green'}"><div class="stat-num">${noIssue}</div><div class="stat-label">No DNC PPE Yet</div></div>
+  `;
+}
+
+function trRenderPPE() {
+  const all   = trAllPPE();
+  const q     = (document.getElementById('tr_ppeSearch')||{}).value?.toLowerCase()||'';
+  const persF = (document.getElementById('tr_ppePersonFilter')||{}).value||'';
+  const itemF = (document.getElementById('tr_ppeItemFilter')||{}).value||'';
+  const people= [...new Set(all.map(e => e.person))].sort();
+
+  const perSel  = document.getElementById('tr_ppePersonFilter');
+  const itemSel = document.getElementById('tr_ppeItemFilter');
+  if (perSel && perSel.options.length <= 1)  people.forEach(p => { const o=document.createElement('option'); o.value=p; o.textContent=p; perSel.appendChild(o); });
+  if (itemSel && itemSel.options.length <= 1) [...new Set(all.map(e=>e.item))].sort().forEach(i => { const o=document.createElement('option'); o.value=i; o.textContent=i; itemSel.appendChild(o); });
+
+  const condColor = s => s==='Issued'?'var(--success)':s==='Own'?'var(--accent2)':'var(--danger)';
+
+  // Cards
+  const cards = document.getElementById('tr_ppeCards');
+  if (cards) {
+    const fp = people.filter(p => (!persF||p===persF)&&(!q||p.toLowerCase().includes(q)));
+    cards.innerHTML = fp.map(person => {
+      const entries = all.filter(e => e.person===person && (!itemF||e.item===itemF));
+      const role = entries[0]?.role||'—';
+      const issuedCount = entries.filter(e=>e.status==='Issued'&&e.qty>0).length;
+      const rows = entries.map(e => `<tr>
+        <td style="font-size:12px;padding:5px 8px;">${e.item}</td>
+        <td style="text-align:center;font-size:12px;padding:5px 8px;">${e.qty}</td>
+        <td style="padding:5px 8px;"><span style="color:${condColor(e.status)};font-weight:700;font-size:11px;">${e.status}</span></td>
+        <td style="font-size:11px;color:var(--muted);padding:5px 8px;">${e.date||'—'}</td>
+        <td style="font-size:11px;padding:5px 8px;">${e.sig?'✍':'—'}</td>
+      </tr>`).join('');
+      return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div style="background:var(--surface2);padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;color:var(--text);">${person}</div>
+            <div style="font-size:11px;color:var(--muted);">${role}</div>
+          </div>
+          <span style="background:var(--accent);color:#000;border-radius:12px;padding:2px 10px;font-size:11px;font-weight:700;">${issuedCount} issued</span>
+        </div>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr style="background:var(--surface2);">
+            <th style="padding:5px 8px;text-align:left;font-size:11px;color:var(--muted);">Item</th>
+            <th style="padding:5px 8px;text-align:center;font-size:11px;color:var(--muted);">Qty</th>
+            <th style="padding:5px 8px;font-size:11px;color:var(--muted);">Status</th>
+            <th style="padding:5px 8px;font-size:11px;color:var(--muted);">Date</th>
+            <th style="padding:5px 8px;font-size:11px;color:var(--muted);">Sig</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+    }).join('');
+  }
+
+  // Table
+  const tbody = document.getElementById('tr_ppeBody');
+  if (tbody) {
+    const filtered = all.filter(e =>
+      (!q||(e.person+e.item+e.notes).toLowerCase().includes(q))&&
+      (!persF||e.person===persF)&&(!itemF||e.item===itemF)
+    );
+    tbody.innerHTML = filtered.map(e => {
+      const del = e.id.startsWith('s') ? '' : `<button class="btn danger small" onclick="trRemovePPE('${e.id}')">✕</button>`;
+      return `<tr>
+        <td><strong>${e.person}</strong></td>
+        <td style="font-size:12px;color:var(--muted);">${e.role}</td>
+        <td>${e.item}</td>
+        <td style="text-align:center;">${e.qty}</td>
+        <td><span style="color:${condColor(e.status)};font-weight:700;font-size:12px;">${e.status}</span></td>
+        <td style="font-size:12px;">${e.date||'—'}</td>
+        <td>${e.sig?'<span style="color:var(--success)">✍ Yes</span>':'<span style="color:var(--muted)">—</span>'}</td>
+        <td style="font-size:11px;color:var(--muted);">${e.notes||'—'}</td>
+        <td>${del}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--muted)">No records match</td></tr>';
+  }
+}
+
+function trExportPPECSV() {
+  const rows = trAllPPE().map(e =>
+    ['person','role','item','qty','status','date','notes'].map(k =>
+      `"${String(e[k]||'').replace(/"/g,'""')}"`).join(',')
+  );
+  const csv = ['Person,Role,Item,Qty,Status,Date,Notes', ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download = `ppe_register_${nowDate()}.csv`;
+  a.click();
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+
+renderDashboard();
+renderRegister();
+</script>
+</body>
+</html>
